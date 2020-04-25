@@ -1,0 +1,36 @@
+.PlayingCard {
+  position: relative;
+  display: inline-block;
+  border: 1px solid black;
+  border-radius: 5px;
+  font-size: 24px;
+  line-height: 28px;
+  width: 48px;
+  height: 64px;
+  margin-right: 4px;
+}
+
+.PlayingCardSuit-spades,
+.PlayingCardSuit-clubs {
+  color: black;
+}
+
+.PlayingCardSuit-hearts,
+.PlayingCardSuit-diamonds {
+  color: red;
+}
+
+.PlayingCardRank {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  right: 24px;
+  letter-spacing: -2px;
+  text-align: center;
+}
+
+.PlayingCardSymbol {
+  position: absolute;
+  bottom: 2px;
+  right: 5px;
+}

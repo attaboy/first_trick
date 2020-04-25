@@ -1,0 +1,12 @@
+.App {
+  font-family: "Gill Sans", "Gill Sans MT", sans-serif;
+  padding: 24px;
+}
+
+.App-header {
+  padding: 10px 0;
+}
+
+button {
+  font-size: 24px;
+}
