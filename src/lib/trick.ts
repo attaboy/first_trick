@@ -10,19 +10,11 @@ interface TrickInterface {
   west: Card | null;
 }
 
-export class Trick implements TrickInterface {
-  readonly lead: Seat;
-  readonly north: Card | null;
-  readonly east: Card | null;
-  readonly south: Card | null;
-  readonly west: Card | null;
+export interface Trick extends Readonly<TrickInterface> {}
 
+export class Trick {
   constructor(props: TrickInterface) {
-    this.lead = props.lead;
-    this.north = props.north;
-    this.east = props.east;
-    this.south = props.south;
-    this.west = props.west;
+    Object.assign(this, props);
   }
 
   clone(props: Partial<TrickInterface>): Trick {

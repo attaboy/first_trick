@@ -3,10 +3,11 @@ import { nextPlayerAfter } from "./game";
 import { Player } from "../player";
 import { Trick, CompletedTrick } from "../trick";
 import { Rank } from "../rank";
-import { Seat } from "../seat";
+import { Seat, AllSeats } from "../seat";
 import { Card } from "../card";
+import { Suit } from "../suit";
 
-export interface GameOfHeartsInterface {
+interface GameOfHeartsInterface {
   north: Player;
   east: Player;
   south: Player;
@@ -15,27 +16,14 @@ export interface GameOfHeartsInterface {
   currentTrick: Trick;
   currentPlayer: Seat;
   heartsBroken: boolean;
+  gameOver: boolean;
 }
 
-export class GameOfHearts implements GameOfHeartsInterface {
-  readonly north: Player;
-  readonly east: Player;
-  readonly south: Player;
-  readonly west: Player;
-  readonly currentDealer: Seat;
-  readonly currentTrick: Trick;
-  readonly currentPlayer: Seat;
-  readonly heartsBroken: boolean;
+export interface GameOfHearts extends Readonly<GameOfHeartsInterface> {}
 
+export class GameOfHearts {
   constructor(props: GameOfHeartsInterface) {
-    this.north = props.north;
-    this.east = props.east;
-    this.south = props.south;
-    this.west = props.west;
-    this.currentDealer = props.currentDealer;
-    this.currentTrick = props.currentTrick;
-    this.currentPlayer = props.currentPlayer;
-    this.heartsBroken = props.heartsBroken;
+    Object.assign(this, props);
   }
 
   private deal(deck: StandardDeck): GameOfHearts {
@@ -66,17 +54,34 @@ export class GameOfHearts implements GameOfHeartsInterface {
       currentPlayer: nextPlayer
     };
     update[playingSeat] = player.playCard(card);
+    if (!this.heartsBroken && card.suit === Suit.Hearts) {
+      update.heartsBroken = true;
+    }
     return this.clone(update);
+  }
+
+  hasTricksLeft() {
+    return this[this.currentPlayer].hand.length > 0;
+  }
+
+  justStarted() {
+    return AllSeats.every((seat) => this[seat].tricksTaken.length === 0);
   }
 
   nextTrick(completedTrick: CompletedTrick): GameOfHearts {
     const trickWinner = this[this.currentPlayer];
     const updatedPlayer = trickWinner.takeTrick(completedTrick);
-    const update: Partial<GameOfHeartsInterface> = {
-      currentTrick: Trick.create(this.currentPlayer)
-    };
-    update[this.currentPlayer] = updatedPlayer;
-    return this.clone(update);
+    if (this.hasTricksLeft()) {
+      const update: Partial<GameOfHeartsInterface> = {
+        currentTrick: Trick.create(this.currentPlayer)
+      };
+      update[this.currentPlayer] = updatedPlayer;
+      return this.clone(update);
+    } else {
+      return this.clone({
+        gameOver: true
+      });
+    }
   }
 
   clone(newProps: Partial<GameOfHeartsInterface>): GameOfHearts {
@@ -85,7 +90,6 @@ export class GameOfHearts implements GameOfHeartsInterface {
 
   static create(currentDealer: Seat): GameOfHearts {
     const deck = new StandardDeck(true);
-    const firstPlayer = nextPlayerAfter(currentDealer);
     let game = new GameOfHearts({
       north: Player.create(Seat.North),
       east: Player.create(Seat.East),
@@ -93,11 +97,16 @@ export class GameOfHearts implements GameOfHeartsInterface {
       west: Player.create(Seat.West),
       currentDealer: currentDealer,
       heartsBroken: false,
-      currentTrick: Trick.create(firstPlayer),
-      currentPlayer: firstPlayer
+      currentTrick: Trick.create(currentDealer),
+      currentPlayer: currentDealer,
+      gameOver: false
     });
     game = game.deal(deck);
-    return game;
+    const firstPlayer = AllSeats.find((seat) => game[seat].hand.some((card) => card.suit === Suit.Clubs && card.rank === Rank.Two)) as Seat;
+    return game.clone({
+      currentPlayer: firstPlayer,
+      currentTrick: Trick.create(firstPlayer)
+    });
   }
 }
 

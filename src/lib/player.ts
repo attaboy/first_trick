@@ -9,16 +9,11 @@ interface PlayerInterface {
   tricksTaken: CompletedTrick[]
 }
 
-export class Player implements PlayerInterface {
-  readonly position: Seat;
-  readonly hand: Card[];
-  readonly score: number;
-  readonly tricksTaken: CompletedTrick[]
+export interface Player extends Readonly<PlayerInterface> {}
+
+export class Player {
   constructor(props: PlayerInterface) {
-    this.position = props.position;
-    this.hand = props.hand;
-    this.score = props.score;
-    this.tricksTaken = props.tricksTaken;
+    Object.assign(this, props);
   }
 
   dealCard(card: Card) {

@@ -5,9 +5,10 @@ import { StandardDeck } from './lib/deck';
 import { Seat, AllSeats } from './lib/seat';
 import { GameTableSeat } from './components/GameTableSeat';
 import { Card } from './lib/card';
-import { PlayingCard } from './components/PlayingCard';
 import { PlayerName } from './components/PlayerName';
 import { CompletedTrick } from './lib/trick';
+import { GameTrick } from './components/GameTrick';
+import { GameStatus } from './components/GameStatus';
 
 interface Props {}
 interface State {
@@ -38,14 +39,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h3>Dealer: <PlayerName seat={game.currentDealer} /></h3>
-        <h2>
-          {maybeCompletedTrick ? (
-            <strong><PlayerName seat={game.currentPlayer} /><span> takes the trick!</span></strong>
-          ) : (
-            <span><span>It’s </span><PlayerName seat={game.currentPlayer} /><span>’s turn.</span></span>
-          )}
-        </h2>
+        <GameStatus game={game} />
       </header>
       <section className="GameTable">
         <div>
@@ -57,37 +51,22 @@ function App() {
               seat={seat}
               hand={game[seat].hand}
               turnActive={game.turnActiveFor(seat)}
+              isFirstTrick={game.justStarted()}
+              isDealer={seat === game.currentDealer}
               trickWinner={seat === maybeTrickWinner}
+              numTricksTaken={game[seat].tricksTaken.length}
               onCardClick={onCardClick}
             />
           ))}
         </div>
-        <div id="GameTrick">
-          <div id="GameTrickNorth">
-            {game.currentTrick.north ? (
-              <PlayingCard card={game.currentTrick.north} />
-            ) : null}
-          </div>
-          <div id="GameTrickEast">
-            {game.currentTrick.east ? (
-              <PlayingCard card={game.currentTrick.east} />
-            ) : null}
-          </div>
-          <div id="GameTrickSouth">
-            {game.currentTrick.south ? (
-              <PlayingCard card={game.currentTrick.south} />
-            ) : null}
-          </div>
-          <div id="GameTrickWest">
-            {game.currentTrick.west ? (
-              <PlayingCard card={game.currentTrick.west} />
-            ) : null}
-          </div>
-          {maybeCompletedTrick && maybeTrickWinner ? (
-            <button className={`GameNextTrickButton GameNextTrickButton-${maybeTrickWinner}`}
-             type="button" onClick={() => nextTrick(maybeCompletedTrick)}>OK</button>
-          ) : null}
-        </div>
+        {game.gameOver ? null : (
+          <GameTrick
+            trick={game.currentTrick}
+            completedTrick={maybeCompletedTrick}
+            trickWinner={maybeTrickWinner}
+            onNextTrick={nextTrick}
+          />
+        )}
       </section>
       <footer>
         <button type="button" onClick={restart}>Restart</button>
