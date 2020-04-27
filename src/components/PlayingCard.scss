@@ -1,13 +1,16 @@
+@import "global";
+
 .PlayingCard {
+  box-sizing: border-box;
   position: relative;
   display: inline-block;
+  background-color: white;
   border: 1px solid black;
   border-radius: 5px;
-  font-size: 24px;
-  line-height: 28px;
-  width: 48px;
-  height: 64px;
-  margin-right: 4px;
+  font-size: $CardWidth / 2.5;
+  width: $CardWidth;
+  height: $CardHeight;
+  margin-right: $CardMargin;
 }
 
 .PlayingCardSuit-spades,
@@ -22,15 +25,15 @@
 
 .PlayingCardRank {
   position: absolute;
-  top: 2px;
+  top: 0;
   left: 0;
-  right: 24px;
-  letter-spacing: -2px;
+  right: $CardWidth / 2;
+  letter-spacing: -1px;
   text-align: center;
 }
 
 .PlayingCardSymbol {
   position: absolute;
-  bottom: 2px;
-  right: 5px;
+  bottom: $CardWidth / 20;
+  right: $CardWidth / 10;
 }

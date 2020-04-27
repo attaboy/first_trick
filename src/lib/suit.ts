@@ -5,7 +5,7 @@ export enum Suit {
   Diamonds = "diamonds",
 }
 
-export const Suits: ReadonlyArray<Suit> = [Suit.Spades, Suit.Hearts, Suit.Clubs, Suit.Diamonds];
+export const AllSuits: ReadonlyArray<Suit> = [Suit.Spades, Suit.Hearts, Suit.Clubs, Suit.Diamonds];
 
 export function suitSymbol(suit: Suit) {
   switch(suit) {

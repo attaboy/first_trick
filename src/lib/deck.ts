@@ -1,5 +1,5 @@
 import { Card } from "./card";
-import { Suits } from "./suit";
+import { AllSuits } from "./suit";
 import { Ranks, EuchreRanks } from "./rank";
 
 interface DeckOfCards {
@@ -27,7 +27,7 @@ export class StandardDeck extends Deck {
   constructor(shuffle: boolean) {
     super();
     this.cards = [];
-    Suits.forEach((suit) => {
+    AllSuits.forEach((suit) => {
       Ranks.forEach((rank) => {
         this.cards.push(new Card(suit, rank));
       });
@@ -44,7 +44,7 @@ export class EuchreDeck extends Deck {
   constructor(shuffle: boolean) {
     super();
     this.cards = [];
-    Suits.forEach((suit) => {
+    AllSuits.forEach((suit) => {
       EuchreRanks.forEach((rank) => {
         this.cards.push(new Card(suit, rank));
       });

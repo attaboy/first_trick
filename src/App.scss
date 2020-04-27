@@ -1,0 +1,138 @@
+@import "components/global";
+
+.App {
+  padding: 24px;
+
+  header {
+    text-align: center;
+    padding-bottom: 1em;
+  }
+
+  h2, h3 {
+    margin: 0;
+  }
+}
+
+.App *:first-child {
+  margin-top: 0;
+}
+
+footer {
+  text-align: center;
+}
+
+button {
+  font-size: 24px;
+}
+
+.GameTable {
+  position: relative;
+  margin: 2em 1.5em 4em;
+  min-height: ($CardHeight + $CardMargin) * 7 + $CardMargin;
+  height: 70vh;
+  max-height: ($CardHeight + $CardMargin) * 9 + $CardMargin;
+  border: 1px solid #808080;
+  background-color: #F0F0F0;
+}
+
+$SideWidth: ($CardWidth + $CardMargin) * 2 + $CardMargin;
+
+#Seat-north {
+  position: absolute;
+  top: $CardMargin;
+  left: $SideWidth + $CardWidth;
+  right: $SideWidth + $CardWidth;
+  text-align: center;
+
+  .SeatLabel {
+    top: -2.5em;
+    left: 50%;
+    margin-left: -2.5em;
+  }
+}
+
+#Seat-east {
+  position: absolute;
+  top: $CardMargin;
+  bottom: $CardMargin;
+  right: $CardMargin;
+  width: $SideWidth;
+  text-align: right;
+
+  .SeatLabel {
+    top: 50%;
+    margin-top: -1em;
+    right: -4em;
+    transform: translateX(0) rotate(90deg);
+  }
+}
+
+#Seat-south {
+  position: absolute;
+  bottom: $CardMargin;
+  left: $SideWidth + $CardWidth;
+  right: $SideWidth + $CardWidth;
+  text-align: center;
+
+  .SeatLabel {
+    bottom: -3em;
+    left: 50%;
+    margin-left: -2.5em;
+  }
+}
+
+#Seat-west {
+  position: absolute;
+  top: $CardMargin;
+  bottom: $CardMargin;
+  left: $CardMargin;
+  width: $SideWidth;
+
+  .SeatLabel {
+    top: 50%;
+    margin-top: -1em;
+    left: -4em;
+    transform: translateX(0) rotate(-90deg);
+  }
+}
+
+$TrickWidth: $CardWidth * 3 + $CardMargin * 3;
+$TrickHeight: $CardHeight * 2 + $CardMargin * 2;
+
+#GameTrick {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -($TrickHeight / 2);
+  margin-left: -($TrickWidth / 2);
+  width: $TrickWidth;
+  height: $TrickHeight;
+}
+
+#GameTrickNorth {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  margin-left: -(($CardWidth + $CardMargin) / 2);
+}
+
+#GameTrickEast {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  margin-top: -($CardHeight / 2);
+}
+
+#GameTrickSouth {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  margin-left: -(($CardWidth + $CardMargin) / 2);
+}
+
+#GameTrickWest {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  margin-top: -($CardHeight / 2);
+}

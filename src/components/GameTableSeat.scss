@@ -1,0 +1,39 @@
+@import "global";
+
+.SeatLabel {
+  position: absolute;
+  display: inline-block;
+  width: 4em;
+  text-align: center;
+  padding: 0.1em 0.2em;
+  margin-bottom: $CardMargin;
+  border: 1px solid black;
+  border-radius: 4px;
+  background-color: white;
+}
+
+.SeatActive .SeatLabel {
+  background-color: black;
+  color: white;
+}
+
+.SeatTrickWinner .SeatLabel {
+  background-color: green;
+  color: white;
+}
+
+.Seat .PlayingCard, .PlayingCardInvalid {
+  border-color: #808080;
+  opacity: 0.5;
+}
+
+.SeatActive .PlayingCardValid {
+  border-color: black;
+  opacity: 1;
+  cursor: pointer;
+}
+
+.SeatActive .PlayingCardValid:hover {
+  border-width: 2px;
+  transform: scale(1.05);
+}
