@@ -15,13 +15,13 @@ export function GameTrick(props: Props) {
   function buttonLabel(seat: Seat) {
     switch(seat) {
       case Seat.North:
-        return "▲";
+        return "▲ Take trick";
       case Seat.East:
-        return "▶︎";
+        return "▶︎ Take trick";
       case Seat.South:
-        return "▼";
+        return "▼ Take trick";
       case Seat.West:
-        return "◀︎";
+        return "◀︎ Take trick";
     }
   }
 

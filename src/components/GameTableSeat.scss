@@ -20,22 +20,6 @@
 }
 
 .SeatTrickWinner .SeatLabel {
-  background-color: green;
+  background-color: #808080;
   color: white;
-}
-
-.Seat .PlayingCard, .PlayingCardInvalid {
-  border-color: #808080;
-  opacity: 0.5;
-}
-
-.SeatActive .PlayingCardValid {
-  border-color: black;
-  opacity: 1;
-  cursor: pointer;
-}
-
-.SeatActive .PlayingCardValid:hover {
-  border-width: 2px;
-  transform: scale(1.05);
 }

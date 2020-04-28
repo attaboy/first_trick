@@ -5,8 +5,8 @@
   position: relative;
   display: inline-block;
   background-color: white;
-  border: 1px solid black;
   border-radius: 5px;
+  box-shadow: 2px 2px 0 $shadowColor;
   font-size: $CardWidth / 2.5;
   width: $CardWidth;
   height: $CardHeight;
@@ -26,14 +26,31 @@
 .PlayingCardRank {
   position: absolute;
   top: 0;
-  left: 0;
-  right: $CardWidth / 2;
+  left: .2em;
   letter-spacing: -1px;
   text-align: center;
+  font-weight: 500;
 }
 
 .PlayingCardSymbol {
   position: absolute;
-  bottom: $CardWidth / 20;
-  right: $CardWidth / 10;
+  bottom: .1em;
+  right: .2em;
+  font-weight: 300;
+}
+
+.Seat .PlayingCard, .PlayingCardInvalid {
+  box-shadow: 1px 1px 0 $shadowColor;
+  opacity: 0.5;
+}
+
+.SeatActive .PlayingCardValid {
+  box-shadow: 2px 2px 0 $shadowColor;
+  opacity: 1;
+  cursor: pointer;
+}
+
+.SeatActive .PlayingCardValid:hover {
+  box-shadow: 2px 2px 5px $shadowColor;
+  transform: scale(1.05);
 }
