@@ -10,4 +10,10 @@ export class Card {
     this.rank = rank;
     this.id = `${rank}-${suit}`;
   }
+
+  is(suit?: Suit, rank?: Rank): boolean {
+    const isSuit = !suit || this.suit === suit;
+    const isRank = !rank || this.rank === rank;
+    return isSuit && isRank;
+  }
 }

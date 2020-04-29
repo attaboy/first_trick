@@ -2,10 +2,18 @@ import { StandardDeck } from "../deck";
 import { nextPlayerAfter } from "./game";
 import { Player } from "../player";
 import { Trick, CompletedTrick } from "../trick";
-import { Rank } from "../rank";
+import { Rank, Ranks } from "../rank";
 import { Seat, AllSeats } from "../seat";
 import { Card } from "../card";
 import { Suit } from "../suit";
+
+export interface GameOfHeartsStatus {
+  north: number
+  east: number
+  south: number
+  west: number
+  handsPlayed: number
+}
 
 interface GameOfHeartsInterface {
   north: Player;
@@ -54,7 +62,7 @@ export class GameOfHearts {
       currentPlayer: nextPlayer
     };
     update[playingSeat] = player.playCard(card);
-    if (!this.heartsBroken && card.suit === Suit.Hearts) {
+    if (!this.heartsBroken && card.is(Suit.Hearts)) {
       update.heartsBroken = true;
     }
     return this.clone(update);
@@ -71,16 +79,61 @@ export class GameOfHearts {
   nextTrick(completedTrick: CompletedTrick): GameOfHearts {
     const trickWinner = this[this.currentPlayer];
     const updatedPlayer = trickWinner.takeTrick(completedTrick);
+    const update: Partial<GameOfHeartsInterface> = {};
+    update[this.currentPlayer] = updatedPlayer;
     if (this.hasTricksLeft()) {
-      const update: Partial<GameOfHeartsInterface> = {
-        currentTrick: Trick.create(this.currentPlayer)
-      };
-      update[this.currentPlayer] = updatedPlayer;
+      update.currentTrick = Trick.create(this.currentPlayer);
       return this.clone(update);
     } else {
-      return this.clone({
-        gameOver: true
+      return this.clone(update).endGame();
+    }
+  }
+
+  endGame(): GameOfHearts {
+    const moonShooter = this.findMoonShooter();
+    const update: Partial<GameOfHeartsInterface> = {
+      gameOver: true
+    };
+    if (moonShooter) {
+      AllSeats.filter((ea) => ea !== moonShooter).forEach((seat) => {
+        const player = this[seat];
+        update[seat] = player.clone({
+          score: player.score + 26
+        });
       });
+    } else {
+      AllSeats.forEach((seat) => {
+        const player = this[seat];
+        const numHearts = player.tricksTaken.reduce((sum, trick) => sum + trick.countHearts(), 0);
+        const hasQueenOfSpades = player.tricksTaken.some((trick) => trick.contains(new Card(Suit.Spades, Rank.Queen)));
+        update[seat] = player.clone({
+          score: player.score + numHearts + (hasQueenOfSpades ? 13 : 0)
+        });
+      })
+    }
+    return this.clone(update);
+  }
+
+  findMoonShooter(): Seat | undefined {
+    return AllSeats.find((seat) => {
+      return shotTheMoon(this[seat].tricksTaken);
+    });
+  }
+
+  validCardForTrick(card: Card, hand: Card[]): boolean {
+    const leadCard = this.currentTrick[this.currentTrick.lead];
+    if (!leadCard && this.justStarted()) {
+      return card.is(Suit.Clubs, Rank.Two);
+    } else if (!leadCard) {
+      return this.heartsBroken ||
+        !card.is(Suit.Hearts) ||
+        hand.every((ea) => ea.is(Suit.Hearts));
+    } else if (hand.some((ea) => ea.is(leadCard.suit))) {
+      return card.is(leadCard.suit);
+    } else if (this.justStarted()) {
+      return !card.is(Suit.Hearts) && !card.is(Suit.Spades, Rank.Queen);
+    } else {
+      return true;
     }
   }
 
@@ -102,7 +155,7 @@ export class GameOfHearts {
       gameOver: false
     });
     game = game.deal(deck);
-    const firstPlayer = AllSeats.find((seat) => game[seat].hand.some((card) => card.suit === Suit.Clubs && card.rank === Rank.Two)) as Seat;
+    const firstPlayer = AllSeats.find((seat) => game[seat].hand.some((card) => card.is(Suit.Clubs, Rank.Two))) as Seat;
     return game.clone({
       currentPlayer: firstPlayer,
       currentTrick: Trick.create(firstPlayer)
@@ -118,7 +171,7 @@ export function winnerOfTrick(trick: CompletedTrick): Seat {
 
   function compare(player: Seat) {
     const card = trick[player];
-    const followedSuit = card.suit === leadingSuit;
+    const followedSuit = card.is(leadingSuit);
     if (followedSuit && numericRankFor(card.rank) > numericRankFor(highCard.rank)) {
       winner = player;
       highCard = card;
@@ -132,6 +185,18 @@ export function winnerOfTrick(trick: CompletedTrick): Seat {
   } while (nextPlayer !== trick.lead);
 
   return winner;
+}
+
+export function shotTheMoon(tricks: CompletedTrick[]): boolean {
+  const allHearts = Ranks.every((rank) => {
+    return tricks.some((trick) => {
+      return trick.contains(new Card(Suit.Hearts, rank))
+    });
+  });
+  const queenOfSpades = tricks.some((trick) => {
+    return trick.contains(new Card(Suit.Spades, Rank.Queen));
+  });
+  return allHearts && queenOfSpades;
 }
 
 function numericRankFor(rank: Rank): number {

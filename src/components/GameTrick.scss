@@ -1,0 +1,81 @@
+@import "global";
+
+$TrickWidth: $CardWidth * 3 + $CardMargin * 4;
+$TrickHeight: $CardHeight * 2 + $CardMargin * 2;
+
+#GameTrick {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -($TrickHeight / 2);
+  margin-left: -($TrickWidth / 2);
+  width: $TrickWidth;
+  height: $TrickHeight;
+}
+
+#GameTrickNorth {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  margin-left: -($CardWidth / 2);
+}
+
+#GameTrickEast {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  margin-top: -($CardHeight / 2);
+}
+
+#GameTrickSouth {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  margin-left: -($CardWidth / 2);
+}
+
+#GameTrickWest {
+  position: absolute;
+  top: 50%;
+  left: $CardMargin;
+  margin-top: -($CardHeight / 2);
+}
+
+.GameNextTrickContainer {
+  position: absolute;
+}
+
+.GameNextTrickContainer-north {
+  bottom: 100%;
+  margin-bottom: $CardMargin * 2;
+  text-align: center;
+
+  left: 0;
+  right: 0;
+}
+
+.GameNextTrickContainer-west {
+  right: 100%;
+  top: 0;
+  bottom: 0;
+
+  @include verticallyCenter;
+}
+
+.GameNextTrickContainer-east {
+  left: 100%;
+  top: 0;
+  bottom: 0;
+
+  @include verticallyCenter;
+  margin-right: $CardMargin;
+}
+
+.GameNextTrickContainer-south {
+  top: 100%;
+  margin-top: $CardMargin;
+  text-align: center;
+
+  left: 0;
+  right: 0;
+}

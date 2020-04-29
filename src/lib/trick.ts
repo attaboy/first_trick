@@ -1,5 +1,5 @@
 import { Card } from "./card";
-import { Seat } from "./seat";
+import { Seat, AllSeats } from "./seat";
 import { Suit } from "./suit";
 
 interface TrickInterface {
@@ -46,13 +46,35 @@ export class Trick {
   }
 }
 
-export class CompletedTrick {
+export class CompletedTrick extends Trick {
   readonly lead: Seat;
   readonly north: Card;
   readonly east: Card;
   readonly south: Card;
   readonly west: Card;
+
+  contains(card: Card): boolean {
+    return AllSeats.some((seat) => {
+      const seatCard = this[seat];
+      return seatCard && seatCard.is(card.suit, card.rank);
+    });
+  }
+
+  countHearts(): number {
+    return AllSeats.filter((seat) => {
+      const seatCard = this[seat];
+      return seatCard.is(Suit.Hearts);
+    }).length;
+  }
+
   constructor(lead: Seat, north: Card, east: Card, south: Card, west: Card, trump?: Suit) {
+    super({
+      lead,
+      north,
+      east,
+      south,
+      west
+    });
     this.lead = lead;
     this.north = north;
     this.east = east;

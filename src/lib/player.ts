@@ -1,6 +1,6 @@
 import { Card } from "./card";
 import { Seat } from "./seat";
-import { Trick, CompletedTrick } from "./trick";
+import { CompletedTrick } from "./trick";
 
 interface PlayerInterface {
   position: Seat

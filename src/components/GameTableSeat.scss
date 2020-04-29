@@ -7,11 +7,16 @@
 
 .SeatLabel {
   display: inline-block;
+  width: 20em;
   padding: 0.1em 0.2em;
   margin-bottom: $CardMargin;
   border: 1px solid black;
   border-radius: 4px;
   background-color: white;
+}
+
+.SeatLabelTrickCounter {
+  opacity: 0.5;
 }
 
 .SeatActive .SeatLabel {

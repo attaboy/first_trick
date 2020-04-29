@@ -4,22 +4,17 @@ import { PlayingCard } from "./PlayingCard";
 import { Seat } from "../lib/seat";
 import { Card } from "../lib/card";
 import "./GameTableSeat.scss";
-import { Trick } from "../lib/trick";
 import { PlayerName } from "./PlayerName";
-import { Suit } from "../lib/suit";
-import { Rank } from "../lib/rank";
 
 interface Props {
-  heartsBroken: boolean
-  currentTrick: Trick
   seat: Seat
   hand: Card[]
   turnActive: boolean
-  isFirstTrick: boolean
   isDealer: boolean
   trickWinner?: boolean
   numTricksTaken: number
   onCardClick: (seat: Seat, card: Card) => void
+  validCardForTrick: (card: Card, hand: Card[]) => boolean
 }
 
 export function GameTableSeat(props: Props) {
@@ -27,25 +22,10 @@ export function GameTableSeat(props: Props) {
     props.onCardClick(props.seat, card);
   }
 
-  function validCard(card: Card): boolean {
-    const leadCard = props.currentTrick[props.currentTrick.lead];
-    if (!leadCard && props.isFirstTrick) {
-      return card.suit === Suit.Clubs && card.rank === Rank.Two;
-    } else if (!leadCard) {
-      return props.heartsBroken ||
-        card.suit !== Suit.Hearts ||
-        props.hand.every((ea) => ea.suit === Suit.Hearts);
-    } else if (props.hand.some((ea) => ea.suit === leadCard.suit)) {
-      return card.suit === leadCard.suit;
-    } else {
-      return true;
-    }
-  }
-
   function tricksTakenLabel() {
     let label = "";
     for (let i = 0; i < props.numTricksTaken; i++) {
-      label += "•";
+      label += "• ";
     }
     return label ? ` ${label}` : "";
   }
@@ -62,12 +42,12 @@ export function GameTableSeat(props: Props) {
           {props.isDealer ? (
             <span> (Dealer)</span>
           ) : null}
+          <span className="SeatLabelTrickCounter"> {tricksTakenLabel()}</span>
         </h4>
-        <span>{tricksTakenLabel()}</span>
       </div>
       <div>
         {sortHand(props.hand).map((card) => (
-          <PlayingCard invalidCard={!validCard(card)} onClick={onClick} key={card.id} card={card} />
+          <PlayingCard invalidCard={!props.validCardForTrick(card, props.hand)} onClick={onClick} key={card.id} card={card} />
         ))}
       </div>
     </div>

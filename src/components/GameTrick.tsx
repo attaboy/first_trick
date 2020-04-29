@@ -1,4 +1,5 @@
 import React from "react";
+import "./GameTrick.scss";
 import { CompletedTrick, Trick } from "../lib/trick";
 import { Seat } from "../lib/seat";
 import { PlayingCard } from "./PlayingCard";
