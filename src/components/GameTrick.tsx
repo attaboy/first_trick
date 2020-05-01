@@ -32,7 +32,7 @@ export function GameTrick(props: Props) {
     if (completedTrick && winner) {
       return (
         <div className={`GameNextTrickContainer GameNextTrickContainer-${winner}`}>
-          <button className={`GameNextTrickButton`}
+          <button className={`button GameNextTrickButton`}
             type="button" onClick={() => props.onNextTrick(completedTrick)}>
             {buttonLabel(winner)}
           </button>

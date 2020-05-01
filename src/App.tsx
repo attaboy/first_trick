@@ -5,11 +5,12 @@ import { StandardDeck } from './lib/deck';
 import { Seat, AllSeats } from './lib/seat';
 import { GameTableSeat } from './components/GameTableSeat';
 import { Card } from './lib/card';
-import { CompletedTrick } from './lib/trick';
+import { CompletedTrick, Trick } from './lib/trick';
 import { GameTrick } from './components/GameTrick';
 import { GameStatus } from './components/GameStatus';
 import { GameOver } from './components/GameOver';
 import { nextPlayerAfter } from './lib/games/game';
+import { GamePassConfirmation } from './components/GamePassConfirmation';
 
 interface Props {}
 interface State {
@@ -35,8 +36,16 @@ function App() {
     setGame(GameOfHearts.create(Seat.North));
   }
 
-  function onCardClick(seat: Seat, card: Card) {
-    setGame(game.playCard(seat, card));
+  function passCards() {
+    setGame(game.passCards());
+  }
+
+  function onCardClick(seat: Seat, card: Card, trick: Trick | null) {
+    if (game.passingModeActive) {
+      setGame(game.selectCardToPass(seat, card))
+    } else if (trick) {
+      setGame(game.playCard(seat, card, trick));
+    }
   }
 
   function nextTrick(completedTrick: CompletedTrick) {
@@ -64,7 +73,7 @@ function App() {
     };
   }
 
-  const maybeCompletedTrick = game.currentTrick.completedTrick();
+  const maybeCompletedTrick = game.currentTrick && game.currentTrick.completedTrick();
   const maybeTrickWinner = maybeCompletedTrick ? winnerOfTrick(maybeCompletedTrick) : null;
 
   return (
@@ -79,32 +88,41 @@ function App() {
               key={`Seat-${seat}`}
               seat={seat}
               hand={game[seat].hand}
+              selectedCards={game[seat].cardsToPass}
+              currentTrick={game.currentTrick}
               turnActive={game.turnActiveFor(seat)}
               isDealer={seat === game.currentDealer}
               trickWinner={seat === maybeTrickWinner}
               numTricksTaken={game[seat].tricksTaken.length}
               onCardClick={onCardClick}
-              validCardForTrick={(card, hand) => game.validCardForTrick(card, hand)}
+              validCard={(card, hand, trick) => game.validCard(card, hand, trick)}
             />
           ))}
         </div>
+        {game.passingModeActive ? (
+          <GamePassConfirmation
+            game={game}
+            onClick={passCards}
+          />
+        ) : null}
         {game.gameOver ? (
           <GameOver
             game={game}
             status={previousStatus}
             onNewGame={startNewGame}
           />
-        ) : (
+        ) : null}
+        {!game.gameOver && game.currentTrick ? (
           <GameTrick
             trick={game.currentTrick}
             completedTrick={maybeCompletedTrick}
             trickWinner={maybeTrickWinner}
             onNextTrick={nextTrick}
           />
-        )}
+        ) : null}
       </section>
       <footer>
-        <button type="button" onClick={restart}>Restart</button>
+        <button className="button" type="button" onClick={restart}>Restart</button>
       </footer>
     </div>
   );

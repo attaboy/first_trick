@@ -21,7 +21,7 @@ footer {
   text-align: center;
 }
 
-button {
+.button {
   cursor: pointer;
   font-size: 1em;
   border-radius: 6px;
@@ -31,12 +31,29 @@ button {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.25);
+  box-shadow: $boxShadow;
+  transition: all 0.075s ease-in;
 }
 
-button:focus, button:active {
+.button:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: $boxShadowHover;
+}
+
+.button[disabled] {
+  cursor: default;
+  opacity: 0.5;
+  box-shadow: $boxShadowDisabled;
+}
+
+.button:focus, .button:active {
   border-color: hsl(226, 81%, 48%);
   outline: none;
+}
+
+.button:active {
+  transform: none;
+  box-shadow: $boxShadow;
 }
 
 .GameTable {
@@ -47,6 +64,7 @@ button:focus, button:active {
   max-height: ($CardHeight + $CardMargin) * 9 + $CardMargin;
   border: 1px solid #808080;
   background-color: #F0F0F0;
+  border-radius: 5vh;
 }
 
 $SideWidth: ($CardWidth + $CardMargin) * 2;
@@ -92,13 +110,13 @@ $SideWidth: ($CardWidth + $CardMargin) * 2;
 
 #Seat-south {
   position: absolute;
-  bottom: $CardMargin;
+  bottom: 0;
   left: $SideWidth + ($CardWidth / 2);
   right: $SideWidth + ($CardWidth / 2);
   text-align: center;
 
   .SeatLabelContainer {
-    bottom: -3em;
+    bottom: -2.5em;
     left: 0;
     right: 0;
   }
@@ -130,7 +148,7 @@ $SideWidth: ($CardWidth + $CardMargin) * 2;
   }
 }
 
-#GameOver {
+#GameOver, #GamePassConfirmation {
   position: relative;
   top: 50%;
   margin-top: -7em;

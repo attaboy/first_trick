@@ -1,8 +1,14 @@
 $CardWidth: 7vmin;
 $CardHeight: 9vmin;
-$CardMargin: 0.5vmin;
-$shadowColor: rgba(0, 0, 0, 0.25);
+$CardMargin: 0.75vmin;
+$shadowColor: rgba(0, 0, 0, 0.15);
+$shadowColorDark: rgba(0, 0, 0, 0.5);
+$shadowColorFade: rgba(0, 0, 0, 0.075);
 $colorFade: hsl(320, 4%, 44%);
+
+$boxShadow: 2px 2px 0 $shadowColor;
+$boxShadowHover: 8px 8px 0 $shadowColorFade;
+$boxShadowDisabled: 1px 1px 0 $shadowColorDark;
 
 @mixin verticallyCenter {
   display: flex;

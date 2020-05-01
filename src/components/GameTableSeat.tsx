@@ -5,21 +5,24 @@ import { Seat } from "../lib/seat";
 import { Card } from "../lib/card";
 import "./GameTableSeat.scss";
 import { PlayerName } from "./PlayerName";
+import { Trick } from "../lib/trick";
 
 interface Props {
   seat: Seat
   hand: Card[]
+  selectedCards: Card[]
+  currentTrick: Trick | null
   turnActive: boolean
   isDealer: boolean
   trickWinner?: boolean
   numTricksTaken: number
-  onCardClick: (seat: Seat, card: Card) => void
-  validCardForTrick: (card: Card, hand: Card[]) => boolean
+  onCardClick: (seat: Seat, card: Card, trick: Trick | null) => void
+  validCard: (card: Card, hand: Card[], trick: Trick | null) => boolean
 }
 
 export function GameTableSeat(props: Props) {
   function onClick(card: Card) {
-    props.onCardClick(props.seat, card);
+    props.onCardClick(props.seat, card, props.currentTrick);
   }
 
   function tricksTakenLabel() {
@@ -28,6 +31,11 @@ export function GameTableSeat(props: Props) {
       label += "• ";
     }
     return label ? ` ${label}` : "";
+  }
+
+  function invalidCard(card: Card): boolean {
+    const canSelectCard = !props.currentTrick || props.turnActive;
+    return !canSelectCard || !props.validCard(card, props.hand, props.currentTrick);
   }
 
   return (
@@ -47,7 +55,13 @@ export function GameTableSeat(props: Props) {
       </div>
       <div>
         {sortHand(props.hand).map((card) => (
-          <PlayingCard invalidCard={!props.validCardForTrick(card, props.hand)} onClick={onClick} key={card.id} card={card} />
+          <PlayingCard
+            selected={props.selectedCards.includes(card)}
+            invalidCard={invalidCard(card)}
+            onClick={onClick}
+            key={card.id}
+            card={card}
+          />
         ))}
       </div>
     </div>

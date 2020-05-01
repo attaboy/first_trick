@@ -15,13 +15,22 @@ export interface GameOfHeartsStatus {
   handsPlayed: number
 }
 
+export enum PassMode {
+  Left = "left",
+  Right = "right",
+  Across = "across",
+  None = "none"
+}
+
 interface GameOfHeartsInterface {
   north: Player;
   east: Player;
   south: Player;
   west: Player;
+  passMode: PassMode;
+  passingModeActive: boolean;
   currentDealer: Seat;
-  currentTrick: Trick;
+  currentTrick: Trick | null;
   currentPlayer: Seat;
   heartsBroken: boolean;
   gameOver: boolean;
@@ -49,12 +58,13 @@ export class GameOfHearts {
   }
 
   turnActiveFor(seat: Seat): boolean {
-    return seat === this.currentPlayer && !this.currentTrick.completedTrick();
+    return Boolean(this.passingModeActive ||
+      (seat === this.currentPlayer && this.currentTrick && !this.currentTrick.completedTrick()));
   }
 
-  playCard(playingSeat: Seat, card: Card): GameOfHearts {
+  playCard(playingSeat: Seat, card: Card, trick: Trick): GameOfHearts {
     const player = this[playingSeat];
-    const currentTrick = this.currentTrick.playCard(playingSeat, card);
+    const currentTrick = trick.playCard(playingSeat, card);
     const completedTrick = currentTrick.completedTrick();
     const nextPlayer = completedTrick ? winnerOfTrick(completedTrick) : nextPlayerAfter(this.currentPlayer);
     const update: Partial<GameOfHeartsInterface> = {
@@ -68,11 +78,70 @@ export class GameOfHearts {
     return this.clone(update);
   }
 
-  hasTricksLeft() {
+  selectCardToPass(playingSeat: Seat, card: Card): GameOfHearts {
+    const player = this[playingSeat];
+    const update: Partial<GameOfHeartsInterface> = {};
+    update[playingSeat] = player.selectCardToPass(card);
+    return this.clone(update);
+  }
+
+  readyToPass(): boolean {
+    return this.passingModeActive && AllSeats.every((seat) => this[seat].cardsToPass.length === 3);
+  }
+
+  passCards(): GameOfHearts {
+    const northSends = this.north.cardsToPass;
+    const eastSends = this.east.cardsToPass;
+    const westSends = this.west.cardsToPass;
+    const southSends = this.south.cardsToPass;
+
+    let northReceives: Card[] = [];
+    let eastReceives: Card[] = [];
+    let southReceives: Card[] = [];
+    let westReceives: Card[] = [];
+
+    if (this.passMode === PassMode.Left) {
+      northReceives = westSends;
+      eastReceives = northSends;
+      southReceives = eastSends;
+      westReceives = southSends;
+    } else if (this.passMode === PassMode.Right) {
+      northReceives = eastSends;
+      eastReceives = southSends;
+      southReceives = westSends;
+      westReceives = northSends;
+    } else if (this.passMode === PassMode.Across) {
+      northReceives = southSends;
+      eastReceives = westSends;
+      southReceives = northSends;
+      westReceives = eastSends;
+    }
+    return this.clone({
+      north: this.north.passAndReceiveCards(northReceives),
+      east: this.east.passAndReceiveCards(eastReceives),
+      south: this.south.passAndReceiveCards(southReceives),
+      west: this.west.passAndReceiveCards(westReceives),
+    }).startFirstTrick()
+  }
+
+  startFirstTrick(): GameOfHearts {
+    const firstPlayer = AllSeats.find((seat) => this[seat].hand.some((card) => card.is(Suit.Clubs, Rank.Two)));
+    if (firstPlayer) {
+      return this.clone({
+        passingModeActive: false,
+        currentPlayer: firstPlayer,
+        currentTrick: Trick.create(firstPlayer)
+      });
+    } else {
+      throw new Error("What did you do with the two of clubs?");
+    }
+  }
+
+  hasTricksLeft(): boolean {
     return this[this.currentPlayer].hand.length > 0;
   }
 
-  justStarted() {
+  justStarted(): boolean {
     return AllSeats.every((seat) => this[seat].tricksTaken.length === 0);
   }
 
@@ -120,8 +189,12 @@ export class GameOfHearts {
     });
   }
 
-  validCardForTrick(card: Card, hand: Card[]): boolean {
-    const leadCard = this.currentTrick[this.currentTrick.lead];
+  validCard(card: Card, hand: Card[], trick: Trick | null): boolean {
+    return !trick || this.validCardForTrick(card, hand, trick);
+  }
+
+  validCardForTrick(card: Card, hand: Card[], trick: Trick): boolean {
+    const leadCard = trick[trick.lead];
     if (!leadCard && this.justStarted()) {
       return card.is(Suit.Clubs, Rank.Two);
     } else if (!leadCard) {
@@ -143,23 +216,19 @@ export class GameOfHearts {
 
   static create(currentDealer: Seat): GameOfHearts {
     const deck = new StandardDeck(true);
-    let game = new GameOfHearts({
+    return new GameOfHearts({
       north: Player.create(Seat.North),
       east: Player.create(Seat.East),
       south: Player.create(Seat.South),
       west: Player.create(Seat.West),
       currentDealer: currentDealer,
       heartsBroken: false,
-      currentTrick: Trick.create(currentDealer),
+      passMode: PassMode.Left,
+      passingModeActive: true,
+      currentTrick: null,
       currentPlayer: currentDealer,
       gameOver: false
-    });
-    game = game.deal(deck);
-    const firstPlayer = AllSeats.find((seat) => game[seat].hand.some((card) => card.is(Suit.Clubs, Rank.Two))) as Seat;
-    return game.clone({
-      currentPlayer: firstPlayer,
-      currentTrick: Trick.create(firstPlayer)
-    });
+    }).deal(deck);
   }
 }
 
@@ -226,7 +295,22 @@ function numericRankFor(rank: Rank): number {
     case Rank.Three:
       return 3;
     case Rank.Two:
+    default:
       return 2;
+  }
+}
+
+export function nextPassModeAfter(prevPassMode: PassMode): PassMode {
+  switch (prevPassMode) {
+    case PassMode.Left:
+      return PassMode.Right;
+    case PassMode.Right:
+      return PassMode.Across;
+    case PassMode.Across:
+      return PassMode.None;
+    case PassMode.None:
+    default:
+      return PassMode.Left;
   }
 }
 

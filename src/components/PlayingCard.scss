@@ -1,16 +1,54 @@
 @import "global";
 
 .PlayingCard {
+  position: relative;
   box-sizing: border-box;
   position: relative;
   display: inline-block;
   background-color: white;
   border-radius: 5px;
-  box-shadow: 2px 2px 0 $shadowColor;
+  border: none;
+  padding: 0;
+  margin: 0;
+  box-shadow: $boxShadow;
   font-size: $CardWidth / 2.5;
   width: $CardWidth;
   height: $CardHeight;
   margin-right: $CardMargin;
+  margin-bottom: $CardMargin;
+  transition: transform 0.075s ease-in;
+}
+
+.PlayingCard:focus,
+.PlayingCard:active {
+  outline: none;
+}
+
+$CardHoverTransform: scale(1.05);
+$CardSelectTransform: rotate(-35deg);
+
+.SeatActive .PlayingCardValid:hover {
+  z-index: 2;
+}
+
+.SeatActive .PlayingCardValid:hover,
+.SeatActive .PlayingCardSelected:active {
+  box-shadow: $boxShadowHover;
+  transform: $CardHoverTransform;
+}
+
+.SeatActive .PlayingCardValid:active,
+.SeatActive .PlayingCardSelected {
+  transform: $CardSelectTransform;
+  z-index: 1;
+}
+
+.SeatActive .PlayingCardSelected:hover {
+  transform: $CardSelectTransform $CardHoverTransform;
+}
+
+.SeatActive .PlayingCardSelected:active {
+  transform: $CardHoverTransform;
 }
 
 .PlayingCardSuit-spades,
@@ -40,17 +78,12 @@
 }
 
 .Seat .PlayingCard, .PlayingCardInvalid {
-  box-shadow: 1px 1px 0 $shadowColor;
+  box-shadow: $boxShadowDisabled;
   opacity: 0.5;
 }
 
 .SeatActive .PlayingCardValid {
-  box-shadow: 2px 2px 0 $shadowColor;
+  box-shadow: $boxShadow;
   opacity: 1;
   cursor: pointer;
-}
-
-.SeatActive .PlayingCardValid:hover {
-  box-shadow: 2px 2px 5px $shadowColor;
-  transform: scale(1.05);
 }

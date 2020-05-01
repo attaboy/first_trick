@@ -35,7 +35,7 @@ export function GameOver(props: GameOverProps) {
         ))}
       </div>
       <div>
-        <button type="button" onClick={props.onNewGame}>Begin next round</button>
+        <button className="button" type="button" onClick={props.onNewGame}>Begin next round</button>
       </div>
     </div>
   );

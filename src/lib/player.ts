@@ -5,6 +5,7 @@ import { CompletedTrick } from "./trick";
 interface PlayerInterface {
   position: Seat
   hand: Card[]
+  cardsToPass: Card[]
   score: number
   tricksTaken: CompletedTrick[]
 }
@@ -28,9 +29,26 @@ export class Player {
     });
   }
 
+  selectCardToPass(card: Card) {
+    const currentCards = this.cardsToPass;
+    const newCards = currentCards.includes(card) ?
+      currentCards.filter((ea) => ea !== card) :
+      currentCards.concat([card]).slice(-3);
+    return this.clone({
+      cardsToPass: newCards
+    });
+  }
+
   takeTrick(trick: CompletedTrick) {
     return this.clone({
       tricksTaken: this.tricksTaken.concat([trick])
+    });
+  }
+
+  passAndReceiveCards(toReceive: Card[]) {
+    return this.clone({
+      hand: this.hand.filter((ea) => !this.cardsToPass.includes(ea)).concat(toReceive),
+      cardsToPass: []
     });
   }
 
@@ -43,7 +61,8 @@ export class Player {
       position,
       hand: [],
       score: 0,
-      tricksTaken: []
+      tricksTaken: [],
+      cardsToPass: []
     });
   }
 }

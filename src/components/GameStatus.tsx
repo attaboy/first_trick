@@ -1,5 +1,5 @@
 import React from "react";
-import { GameOfHearts, GameOfHeartsStatus } from "../lib/games/hearts";
+import { GameOfHearts, GameOfHeartsStatus, PassMode } from "../lib/games/hearts";
 import { PlayerName } from "./PlayerName";
 import { Seat } from "../lib/seat";
 
@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function GameStatus(props: Props) {
-  const completedTrick = props.game.currentTrick.completedTrick();
+  const completedTrick = props.game.currentTrick && props.game.currentTrick.completedTrick();
   const currentPlayer = props.game.currentPlayer;
 
   function mainHeading() {
@@ -21,10 +21,17 @@ export function GameStatus(props: Props) {
       return (
         <h2><PlayerName seat={currentPlayer} /><span> takes the trick!</span></h2>
       );
+    } else if (props.game.passingModeActive) {
+      return (
+        <h2>Choose three cards to pass {props.game.passMode}</h2>
+      );
     } else {
       return (
         <h2>
           <span>{props.game.justStarted() ? "First trick! " : ""}</span>
+          {props.game.passMode === PassMode.None ? (
+            <span> (No passing.) </span>
+          ) : null}
           <span>It’s </span><PlayerName seat={currentPlayer} /><span>’s turn.</span>
         </h2>
       );
