@@ -214,19 +214,19 @@ export class GameOfHearts {
     return new GameOfHearts(Object.assign({}, this, newProps));
   }
 
-  static create(currentDealer: Seat): GameOfHearts {
+  static create(newDealer: Seat, newPassMode?: PassMode): GameOfHearts {
     const deck = new StandardDeck(true);
     return new GameOfHearts({
       north: Player.create(Seat.North),
       east: Player.create(Seat.East),
       south: Player.create(Seat.South),
       west: Player.create(Seat.West),
-      currentDealer: currentDealer,
+      currentDealer: newDealer,
       heartsBroken: false,
-      passMode: PassMode.Left,
+      passMode: newPassMode || PassMode.Left,
       passingModeActive: true,
       currentTrick: null,
-      currentPlayer: currentDealer,
+      currentPlayer: newDealer,
       gameOver: false
     }).deal(deck);
   }

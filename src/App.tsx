@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './App.scss';
-import { GameOfHearts, winnerOfTrick, GameOfHeartsStatus } from './lib/games/hearts';
+import { GameOfHearts, winnerOfTrick, GameOfHeartsStatus, nextPassModeAfter } from './lib/games/hearts';
 import { StandardDeck } from './lib/deck';
 import { Seat, AllSeats } from './lib/seat';
 import { GameTableSeat } from './components/GameTableSeat';
@@ -60,7 +60,7 @@ function App() {
       west: previousStatus.west + game.west.score,
       handsPlayed: previousStatus.handsPlayed + 1
     });
-    setGame(GameOfHearts.create(nextPlayerAfter(game.currentDealer)))
+    setGame(GameOfHearts.create(nextPlayerAfter(game.currentDealer), nextPassModeAfter(game.passMode)));
   }
 
   function currentStatus(): GameOfHeartsStatus {
