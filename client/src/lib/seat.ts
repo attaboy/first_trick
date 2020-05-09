@@ -1,8 +1,13 @@
-export enum Seat {
-  North = "north",
-  East = "east",
-  South = "south",
-  West = "west",
-}
+export type North = "north"
+export type East = "east"
+export type South = "south"
+export type West = "west"
 
-export const AllSeats: ReadonlyArray<Seat> = [Seat.North, Seat.East, Seat.South, Seat.West];
+export const North: North = "north"
+export const East: East = "east"
+export const South: South = "south"
+export const West: West = "west"
+
+export type Seat = North | East | South | West
+
+export const AllSeats: ReadonlyArray<Seat> = [North, East, South, West];

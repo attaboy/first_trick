@@ -1,11 +1,11 @@
 import { StandardDeck } from "../deck";
 import { nextPlayerAfter } from "./game";
-import { Player } from "../player";
-import { Trick, CompletedTrick } from "../trick";
-import { Rank, Ranks } from "../rank";
-import { Seat, AllSeats } from "../seat";
-import { Card } from "../card";
-import { Suit } from "../suit";
+import { Player, dealCardFor, playCardFor, selectCardToPassFor, takeTrickFor, passAndReceiveCardsFor, addScoreFor, CreatePlayer } from "../player";
+import { Trick, CompletedTrick, completedTrickContains, countHearts, playCardForTrick, completedTrickFrom, CreateTrick } from "../trick";
+import { Rank, Ranks, Two, Queen, Ace, King, Jack, Ten, Nine, Eight, Seven, Six, Five, Four, Three } from "../rank";
+import { Seat, AllSeats, North, East, South, West } from "../seat";
+import { Card, CardIs } from "../card";
+import { Hearts, Clubs, Spades } from "../suit";
 
 export interface GameOfHeartsStatus {
   north: number
@@ -15,26 +15,33 @@ export interface GameOfHeartsStatus {
   handsPlayed: number
 }
 
-export enum PassMode {
-  Left = "left",
-  Right = "right",
-  Across = "across",
-  None = "none"
+export type Left = "left"
+export type Right = "right"
+export type Across = "across"
+export type None = "none"
+
+export const Left: Left = "left"
+export const Right: Right = "right"
+export const Across: Across = "across"
+export const None: None = "none"
+
+export type PassMode = Left | Right | Across | None
+
+export interface GameOfHeartsJson {
+  north: Player
+  east: Player
+  south: Player
+  west: Player
+  passMode: PassMode
+  passingModeActive: boolean
+  currentDealer: Seat
+  currentTrick: Trick | null
+  currentPlayer: Seat
+  heartsBroken: boolean
+  gameOver: boolean
 }
 
-interface GameOfHeartsInterface {
-  north: Player;
-  east: Player;
-  south: Player;
-  west: Player;
-  passMode: PassMode;
-  passingModeActive: boolean;
-  currentDealer: Seat;
-  currentTrick: Trick | null;
-  currentPlayer: Seat;
-  heartsBroken: boolean;
-  gameOver: boolean;
-}
+interface GameOfHeartsInterface extends GameOfHeartsJson {}
 
 export interface GameOfHearts extends Readonly<GameOfHeartsInterface> {}
 
@@ -43,36 +50,36 @@ export class GameOfHearts {
     Object.assign(this, props);
   }
 
-  private deal(deck: StandardDeck): GameOfHearts {
+  private deal(deck: Card[]): GameOfHearts {
     let recipient = nextPlayerAfter(this.currentDealer);
-    let nextCard = deck.cards.pop();
+    let nextCard = deck.pop();
     let game = this.clone({});
     while (nextCard) {
       const update: Partial<GameOfHeartsInterface> = {};
-      update[recipient] = game[recipient].dealCard(nextCard);
+      update[recipient] = dealCardFor(game[recipient], nextCard);
       game = game.clone(update)
       recipient = nextPlayerAfter(recipient);
-      nextCard = deck.cards.pop();
+      nextCard = deck.pop();
     }
     return game;
   }
 
   turnActiveFor(seat: Seat): boolean {
     return Boolean(this.passingModeActive ||
-      (seat === this.currentPlayer && this.currentTrick && !this.currentTrick.completedTrick()));
+      (seat === this.currentPlayer && this.currentTrick && !completedTrickFrom(this.currentTrick)));
   }
 
   playCard(playingSeat: Seat, card: Card, trick: Trick): GameOfHearts {
     const player = this[playingSeat];
-    const currentTrick = trick.playCard(playingSeat, card);
-    const completedTrick = currentTrick.completedTrick();
+    const currentTrick = playCardForTrick(trick, playingSeat, card);
+    const completedTrick = completedTrickFrom(currentTrick);
     const nextPlayer = completedTrick ? winnerOfTrick(completedTrick) : nextPlayerAfter(this.currentPlayer);
     const update: Partial<GameOfHeartsInterface> = {
       currentTrick: currentTrick,
       currentPlayer: nextPlayer
     };
-    update[playingSeat] = player.playCard(card);
-    if (!this.heartsBroken && card.is(Suit.Hearts)) {
+    update[playingSeat] = playCardFor(player, card);
+    if (!this.heartsBroken && CardIs(card, Hearts)) {
       update.heartsBroken = true;
     }
     return this.clone(update);
@@ -81,7 +88,7 @@ export class GameOfHearts {
   selectCardToPass(playingSeat: Seat, card: Card): GameOfHearts {
     const player = this[playingSeat];
     const update: Partial<GameOfHeartsInterface> = {};
-    update[playingSeat] = player.selectCardToPass(card);
+    update[playingSeat] = selectCardToPassFor(player, card);
     return this.clone(update);
   }
 
@@ -100,37 +107,37 @@ export class GameOfHearts {
     let southReceives: Card[] = [];
     let westReceives: Card[] = [];
 
-    if (this.passMode === PassMode.Left) {
+    if (this.passMode === Left) {
       northReceives = westSends;
       eastReceives = northSends;
       southReceives = eastSends;
       westReceives = southSends;
-    } else if (this.passMode === PassMode.Right) {
+    } else if (this.passMode === Right) {
       northReceives = eastSends;
       eastReceives = southSends;
       southReceives = westSends;
       westReceives = northSends;
-    } else if (this.passMode === PassMode.Across) {
+    } else if (this.passMode === Across) {
       northReceives = southSends;
       eastReceives = westSends;
       southReceives = northSends;
       westReceives = eastSends;
     }
     return this.clone({
-      north: this.north.passAndReceiveCards(northReceives),
-      east: this.east.passAndReceiveCards(eastReceives),
-      south: this.south.passAndReceiveCards(southReceives),
-      west: this.west.passAndReceiveCards(westReceives),
+      north: passAndReceiveCardsFor(this.north, northReceives),
+      east: passAndReceiveCardsFor(this.east, eastReceives),
+      south: passAndReceiveCardsFor(this.south, southReceives),
+      west: passAndReceiveCardsFor(this.west, westReceives),
     }).startFirstTrick()
   }
 
   startFirstTrick(): GameOfHearts {
-    const firstPlayer = AllSeats.find((seat) => this[seat].hand.some((card) => card.is(Suit.Clubs, Rank.Two)));
+    const firstPlayer = AllSeats.find((seat) => this[seat].hand.some((card) => CardIs(card, Clubs, Two)));
     if (firstPlayer) {
       return this.clone({
         passingModeActive: false,
         currentPlayer: firstPlayer,
-        currentTrick: Trick.create(firstPlayer)
+        currentTrick: CreateTrick(firstPlayer)
       });
     } else {
       throw new Error("What did you do with the two of clubs?");
@@ -147,11 +154,11 @@ export class GameOfHearts {
 
   nextTrick(completedTrick: CompletedTrick): GameOfHearts {
     const trickWinner = this[this.currentPlayer];
-    const updatedPlayer = trickWinner.takeTrick(completedTrick);
+    const updatedPlayer = takeTrickFor(trickWinner, completedTrick);
     const update: Partial<GameOfHeartsInterface> = {};
     update[this.currentPlayer] = updatedPlayer;
     if (this.hasTricksLeft()) {
-      update.currentTrick = Trick.create(this.currentPlayer);
+      update.currentTrick = CreateTrick(this.currentPlayer);
       return this.clone(update);
     } else {
       return this.clone(update).endGame();
@@ -166,19 +173,15 @@ export class GameOfHearts {
     if (moonShooter) {
       AllSeats.filter((ea) => ea !== moonShooter).forEach((seat) => {
         const player = this[seat];
-        update[seat] = player.clone({
-          score: player.score + 26
-        });
+        update[seat] = addScoreFor(player, 26);
       });
     } else {
       AllSeats.forEach((seat) => {
         const player = this[seat];
-        const numHearts = player.tricksTaken.reduce((sum, trick) => sum + trick.countHearts(), 0);
-        const hasQueenOfSpades = player.tricksTaken.some((trick) => trick.contains(new Card(Suit.Spades, Rank.Queen)));
-        update[seat] = player.clone({
-          score: player.score + numHearts + (hasQueenOfSpades ? 13 : 0)
-        });
-      })
+        const numHearts = player.tricksTaken.reduce((sum, trick) => sum + countHearts(trick), 0);
+        const hasQueenOfSpades = player.tricksTaken.some((trick) => completedTrickContains(trick, { suit: Spades, rank: Queen }));
+        update[seat] = addScoreFor(player, numHearts + (hasQueenOfSpades ? 13 : 0));
+      });
     }
     return this.clone(update);
   }
@@ -196,15 +199,15 @@ export class GameOfHearts {
   validCardForTrick(card: Card, hand: Card[], trick: Trick): boolean {
     const leadCard = trick[trick.lead];
     if (!leadCard && this.justStarted()) {
-      return card.is(Suit.Clubs, Rank.Two);
+      return CardIs(card, Clubs, Two);
     } else if (!leadCard) {
       return this.heartsBroken ||
-        !card.is(Suit.Hearts) ||
-        hand.every((ea) => ea.is(Suit.Hearts));
-    } else if (hand.some((ea) => ea.is(leadCard.suit))) {
-      return card.is(leadCard.suit);
+        !CardIs(card, Hearts) ||
+        hand.every((ea) => CardIs(ea, Hearts));
+    } else if (hand.some((ea) => CardIs(ea, leadCard.suit))) {
+      return CardIs(card, leadCard.suit);
     } else if (this.justStarted()) {
-      return !card.is(Suit.Hearts) && !card.is(Suit.Spades, Rank.Queen);
+      return !CardIs(card, Hearts) && !CardIs(card, Spades, Queen);
     } else {
       return true;
     }
@@ -215,20 +218,36 @@ export class GameOfHearts {
   }
 
   static create(newDealer: Seat, newPassMode?: PassMode): GameOfHearts {
-    const deck = new StandardDeck(true);
+    const deck = StandardDeck(true);
     return new GameOfHearts({
-      north: Player.create(Seat.North),
-      east: Player.create(Seat.East),
-      south: Player.create(Seat.South),
-      west: Player.create(Seat.West),
+      north: CreatePlayer(North),
+      east: CreatePlayer(East),
+      south: CreatePlayer(South),
+      west: CreatePlayer(West),
       currentDealer: newDealer,
       heartsBroken: false,
-      passMode: newPassMode || PassMode.Left,
+      passMode: newPassMode || Left,
       passingModeActive: true,
       currentTrick: null,
       currentPlayer: newDealer,
       gameOver: false
     }).deal(deck);
+  }
+
+  static fromJson(json: GameOfHeartsJson): GameOfHearts {
+    return new GameOfHearts({
+      north: json.north,
+      east: json.east,
+      south: json.south,
+      west: json.west,
+      currentDealer: json.currentDealer,
+      heartsBroken: json.heartsBroken,
+      passMode: json.passMode,
+      passingModeActive: json.passingModeActive,
+      currentTrick: json.currentTrick,
+      currentPlayer: json.currentPlayer,
+      gameOver: json.gameOver
+    });
   }
 }
 
@@ -240,7 +259,7 @@ export function winnerOfTrick(trick: CompletedTrick): Seat {
 
   function compare(player: Seat) {
     const card = trick[player];
-    const followedSuit = card.is(leadingSuit);
+    const followedSuit = CardIs(card, leadingSuit);
     if (followedSuit && numericRankFor(card.rank) > numericRankFor(highCard.rank)) {
       winner = player;
       highCard = card;
@@ -259,42 +278,42 @@ export function winnerOfTrick(trick: CompletedTrick): Seat {
 export function shotTheMoon(tricks: CompletedTrick[]): boolean {
   const allHearts = Ranks.every((rank) => {
     return tricks.some((trick) => {
-      return trick.contains(new Card(Suit.Hearts, rank))
+      return completedTrickContains(trick, { suit: Hearts, rank: rank })
     });
   });
   const queenOfSpades = tricks.some((trick) => {
-    return trick.contains(new Card(Suit.Spades, Rank.Queen));
+    return completedTrickContains(trick, { suit: Spades, rank: Queen });
   });
   return allHearts && queenOfSpades;
 }
 
 function numericRankFor(rank: Rank): number {
   switch (rank) {
-    case Rank.Ace:
+    case Ace:
       return 14;
-    case Rank.King:
+    case King:
       return 13;
-    case Rank.Queen:
+    case Queen:
       return 12;
-    case Rank.Jack:
+    case Jack:
       return 11;
-    case Rank.Ten:
+    case Ten:
       return 10;
-    case Rank.Nine:
+    case Nine:
       return 9;
-    case Rank.Eight:
+    case Eight:
       return 8;
-    case Rank.Seven:
+    case Seven:
       return 7;
-    case Rank.Six:
+    case Six:
       return 6;
-    case Rank.Five:
+    case Five:
       return 5;
-    case Rank.Four:
+    case Four:
       return 4;
-    case Rank.Three:
+    case Three:
       return 3;
-    case Rank.Two:
+    case Two:
     default:
       return 2;
   }
@@ -302,15 +321,15 @@ function numericRankFor(rank: Rank): number {
 
 export function nextPassModeAfter(prevPassMode: PassMode): PassMode {
   switch (prevPassMode) {
-    case PassMode.Left:
-      return PassMode.Right;
-    case PassMode.Right:
-      return PassMode.Across;
-    case PassMode.Across:
-      return PassMode.None;
-    case PassMode.None:
+    case Left:
+      return Right;
+    case Right:
+      return Across;
+    case Across:
+      return None;
+    case None:
     default:
-      return PassMode.Left;
+      return Left;
   }
 }
 

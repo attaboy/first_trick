@@ -1,7 +1,7 @@
 import React from "react";
 import "./GameTrick.scss";
 import { CompletedTrick, Trick } from "../lib/trick";
-import { Seat } from "../lib/seat";
+import { Seat, North, East, South, West } from "../lib/seat";
 import { PlayingCard } from "./PlayingCard";
 
 interface Props {
@@ -15,13 +15,13 @@ export function GameTrick(props: Props) {
 
   function buttonLabel(seat: Seat) {
     switch(seat) {
-      case Seat.North:
+      case North:
         return "▲ Take trick";
-      case Seat.East:
+      case East:
         return "▶︎ Take trick";
-      case Seat.South:
+      case South:
         return "▼ Take trick";
-      case Seat.West:
+      case West:
         return "◀︎ Take trick";
     }
   }

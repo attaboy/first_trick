@@ -1,74 +1,82 @@
 import { winnerOfTrick } from "./hearts"
 import { CompletedTrick } from "../trick"
 import { Card } from "../card"
-import { Seat } from "./game"
-import { Suit } from "../suit"
-import { Rank } from "../rank"
+import { Seat, North, East, South, West } from "../seat"
+import { Suit, Hearts, Spades, Diamonds, Clubs } from "../suit"
+import { Rank, Ace, King, Queen, Jack, Two, Five, Eight, Six } from "../rank"
 
 describe("winnerOfTrick", () => {
   it("returns the winner of a completed trick", () => {
-    const winner1 = winnerOfTrick(new CompletedTrick(Seat.North,
-      new Card(Suit.Hearts, Rank.Ace),
-      new Card(Suit.Hearts, Rank.King),
-      new Card(Suit.Hearts, Rank.Queen),
-      new Card(Suit.Hearts, Rank.Jack)
-    ));
-    expect(winner1).toBe(Seat.North);
+    const winner1 = winnerOfTrick({
+      lead: North,
+      north: { suit: Hearts, rank: Ace },
+      east: { suit: Hearts, rank: King },
+      south: { suit: Hearts, rank: Queen },
+      west: { suit: Hearts, rank: Jack }
+    });
+    expect(winner1).toBe(North);
 
-    const winner2 = winnerOfTrick(new CompletedTrick(Seat.North,
-      new Card(Suit.Hearts, Rank.Two),
-      new Card(Suit.Hearts, Rank.Jack),
-      new Card(Suit.Hearts, Rank.Five),
-      new Card(Suit.Hearts, Rank.Eight)
-    ));
-    expect(winner2).toBe(Seat.East);
+    const winner2 = winnerOfTrick({
+      lead: North,
+      north: { suit: Hearts, rank: Two },
+      east: { suit: Hearts, rank: Jack },
+      south: { suit: Hearts, rank: Five },
+      west: { suit: Hearts, rank: Eight }
+    });
+    expect(winner2).toBe(East);
 
-    const winner3 = winnerOfTrick(new CompletedTrick(Seat.North,
-      new Card(Suit.Hearts, Rank.Two),
-      new Card(Suit.Spades, Rank.Jack),
-      new Card(Suit.Diamonds, Rank.Five),
-      new Card(Suit.Clubs, Rank.Eight)
-    ));
-    expect(winner3).toBe(Seat.North);
+    const winner3 = winnerOfTrick({
+      lead: North,
+      north: { suit: Hearts, rank: Two },
+      east: { suit: Spades, rank: Jack },
+      south: { suit: Diamonds, rank: Five },
+      west: { suit: Clubs, rank: Eight }
+    });
+    expect(winner3).toBe(North);
 
-    const winner4 = winnerOfTrick(new CompletedTrick(Seat.East,
-      new Card(Suit.Hearts, Rank.Two),
-      new Card(Suit.Spades, Rank.Jack),
-      new Card(Suit.Diamonds, Rank.Five),
-      new Card(Suit.Clubs, Rank.Eight)
-    ));
-    expect(winner4).toBe(Seat.East);
+    const winner4 = winnerOfTrick({
+      lead: East,
+      north: { suit: Hearts, rank: Two },
+      east: { suit: Spades, rank: Jack },
+      south: { suit: Diamonds, rank: Five },
+      west: { suit: Clubs, rank: Eight }
+    });
+    expect(winner4).toBe(East);
 
-    const winner5 = winnerOfTrick(new CompletedTrick(Seat.South,
-      new Card(Suit.Hearts, Rank.Two),
-      new Card(Suit.Spades, Rank.Jack),
-      new Card(Suit.Diamonds, Rank.Five),
-      new Card(Suit.Clubs, Rank.Eight)
-    ));
-    expect(winner5).toBe(Seat.South);
+    const winner5 = winnerOfTrick({
+      lead: South,
+      north: { suit: Hearts, rank: Two },
+      east: { suit: Spades, rank: Jack },
+      south: { suit: Diamonds, rank: Five },
+      west: { suit: Clubs, rank: Eight }
+    });
+    expect(winner5).toBe(South);
 
-    const winner6 = winnerOfTrick(new CompletedTrick(Seat.West,
-      new Card(Suit.Hearts, Rank.Two),
-      new Card(Suit.Spades, Rank.Jack),
-      new Card(Suit.Diamonds, Rank.Five),
-      new Card(Suit.Clubs, Rank.Eight)
-    ));
-    expect(winner6).toBe(Seat.West);
+    const winner6 = winnerOfTrick({
+      lead: West,
+      north: { suit: Hearts, rank: Two },
+      east: { suit: Spades, rank: Jack },
+      south: { suit: Diamonds, rank: Five },
+      west: { suit: Clubs, rank: Eight }
+    });
+    expect(winner6).toBe(West);
 
-    const winner7 = winnerOfTrick(new CompletedTrick(Seat.South,
-      new Card(Suit.Diamonds, Rank.Six),
-      new Card(Suit.Spades, Rank.Jack),
-      new Card(Suit.Diamonds, Rank.Five),
-      new Card(Suit.Clubs, Rank.Eight)
-    ));
-    expect(winner7).toBe(Seat.North);
+    const winner7 = winnerOfTrick({
+      lead: South,
+      north: { suit: Diamonds, rank: Six },
+      east: { suit: Spades, rank: Jack },
+      south: { suit: Diamonds, rank: Five },
+      west: { suit: Clubs, rank: Eight }
+    });
+    expect(winner7).toBe(North);
 
-    const winner8 = winnerOfTrick(new CompletedTrick(Seat.East,
-      new Card(Suit.Spades, Rank.Queen),
-      new Card(Suit.Spades, Rank.Jack),
-      new Card(Suit.Spades, Rank.Five),
-      new Card(Suit.Spades, Rank.Eight)
-    ));
-    expect(winner8).toBe(Seat.North);
+    const winner8 = winnerOfTrick({
+      lead: East,
+      north: { suit: Spades, rank: Queen },
+      east: { suit: Spades, rank: Jack },
+      south: { suit: Spades, rank: Five },
+      west: { suit: Spades, rank: Eight }
+    });
+    expect(winner8).toBe(North);
   });
 });

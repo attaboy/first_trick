@@ -2,7 +2,7 @@ import { Card } from "./card";
 import { Seat } from "./seat";
 import { CompletedTrick } from "./trick";
 
-interface PlayerInterface {
+export interface PlayerJson {
   position: Seat
   hand: Card[]
   cardsToPass: Card[]
@@ -10,59 +10,55 @@ interface PlayerInterface {
   tricksTaken: CompletedTrick[]
 }
 
-export interface Player extends Readonly<PlayerInterface> {}
+export interface Player extends Readonly<PlayerJson> {}
 
-export class Player {
-  constructor(props: PlayerInterface) {
-    Object.assign(this, props);
-  }
+export function dealCardFor(player: Player, card: Card): Player {
+  return Object.assign({}, player, {
+    hand: player.hand.concat([card])
+  });
+}
 
-  dealCard(card: Card) {
-    return this.clone({
-      hand: this.hand.concat([card])
-    });
-  }
+export function playCardFor(player: Player, card: Card): Player {
+  return Object.assign({}, player, {
+    hand: player.hand.filter((ea) => ea !== card)
+  });
+}
 
-  playCard(card: Card) {
-    return this.clone({
-      hand: this.hand.filter((ea) => ea !== card)
-    });
-  }
+export function selectCardToPassFor(player: Player, card: Card): Player {
+  const currentCards = player.cardsToPass;
+  const newCards = currentCards.includes(card) ?
+    currentCards.filter((ea) => ea !== card) :
+    currentCards.concat([card]).slice(-3);
+  return Object.assign({}, player, {
+    cardsToPass: newCards
+  });
+}
 
-  selectCardToPass(card: Card) {
-    const currentCards = this.cardsToPass;
-    const newCards = currentCards.includes(card) ?
-      currentCards.filter((ea) => ea !== card) :
-      currentCards.concat([card]).slice(-3);
-    return this.clone({
-      cardsToPass: newCards
-    });
-  }
+export function takeTrickFor(player: Player, trick: CompletedTrick): Player {
+  return Object.assign({}, player, {
+    tricksTaken: player.tricksTaken.concat([trick])
+  });
+}
 
-  takeTrick(trick: CompletedTrick) {
-    return this.clone({
-      tricksTaken: this.tricksTaken.concat([trick])
-    });
-  }
+export function passAndReceiveCardsFor(player: Player, toReceive: Card[]): Player {
+  return Object.assign({}, player, {
+    hand: player.hand.filter((ea) => !player.cardsToPass.includes(ea)).concat(toReceive),
+    cardsToPass: []
+  });
+}
 
-  passAndReceiveCards(toReceive: Card[]) {
-    return this.clone({
-      hand: this.hand.filter((ea) => !this.cardsToPass.includes(ea)).concat(toReceive),
-      cardsToPass: []
-    });
-  }
+export function addScoreFor(player: Player, addScore: number): Player {
+  return Object.assign({}, player, {
+    score: player.score + addScore
+  });
+}
 
-  clone(props: Partial<PlayerInterface>): Player {
-    return new Player(Object.assign({}, this, props));
-  }
-
-  static create(position: Seat): Player {
-    return new Player({
-      position,
-      hand: [],
-      score: 0,
-      tricksTaken: [],
-      cardsToPass: []
-    });
-  }
+export function CreatePlayer(position: Seat): Player {
+  return {
+    position,
+    hand: [],
+    score: 0,
+    tricksTaken: [],
+    cardsToPass: []
+  };
 }

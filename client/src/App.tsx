@@ -1,25 +1,27 @@
 import React, { useState } from 'react';
 import './App.scss';
 import { GameOfHearts, winnerOfTrick, GameOfHeartsStatus, nextPassModeAfter } from './lib/games/hearts';
-import { StandardDeck } from './lib/deck';
-import { Seat, AllSeats } from './lib/seat';
+import { Seat, AllSeats, North } from './lib/seat';
 import { GameTableSeat } from './components/GameTableSeat';
 import { Card } from './lib/card';
-import { CompletedTrick, Trick } from './lib/trick';
+import { CompletedTrick, Trick, completedTrickFrom } from './lib/trick';
 import { GameTrick } from './components/GameTrick';
 import { GameStatus } from './components/GameStatus';
 import { GameOver } from './components/GameOver';
 import { nextPlayerAfter } from './lib/games/game';
 import { GamePassConfirmation } from './components/GamePassConfirmation';
 
-interface Props {}
+interface Props {
+  game: GameOfHearts
+  setGame: (game: GameOfHearts) => void
+}
+
 interface State {
-  deck: StandardDeck;
+  deck: Card[];
   game: GameOfHearts;
   status: GameOfHeartsStatus
 }
 
-const newGame = GameOfHearts.create(Seat.North);
 const newStatus: GameOfHeartsStatus = {
   north: 0,
   east: 0,
@@ -28,12 +30,14 @@ const newStatus: GameOfHeartsStatus = {
   handsPlayed: 0
 }
 
-function App() {
-  const [game, setGame] = useState(newGame);
+function App(props: Props) {
+  const game = props.game;
+  const setGame = props.setGame;
+
   const [previousStatus, setPreviousStatus] = useState(newStatus);
 
   function restart() {
-    setGame(GameOfHearts.create(Seat.North));
+    setGame(GameOfHearts.create(North));
   }
 
   function passCards() {
@@ -73,7 +77,7 @@ function App() {
     };
   }
 
-  const maybeCompletedTrick = game.currentTrick && game.currentTrick.completedTrick();
+  const maybeCompletedTrick = game.currentTrick && completedTrickFrom(game.currentTrick);
   const maybeTrickWinner = maybeCompletedTrick ? winnerOfTrick(maybeCompletedTrick) : null;
 
   return (

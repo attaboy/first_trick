@@ -1,7 +1,8 @@
 import React from "react";
-import { GameOfHearts, GameOfHeartsStatus, PassMode } from "../lib/games/hearts";
+import { GameOfHearts, GameOfHeartsStatus, None } from "../lib/games/hearts";
 import { PlayerName } from "./PlayerName";
-import { Seat } from "../lib/seat";
+import { North, East, South, West } from "../lib/seat";
+import { completedTrickFrom } from "../lib/trick";
 
 interface Props {
   game: GameOfHearts
@@ -9,7 +10,7 @@ interface Props {
 }
 
 export function GameStatus(props: Props) {
-  const completedTrick = props.game.currentTrick && props.game.currentTrick.completedTrick();
+  const completedTrick = props.game.currentTrick && completedTrickFrom(props.game.currentTrick);
   const currentPlayer = props.game.currentPlayer;
 
   function mainHeading() {
@@ -29,7 +30,7 @@ export function GameStatus(props: Props) {
       return (
         <h2>
           <span>{props.game.justStarted() ? "First trick! " : ""}</span>
-          {props.game.passMode === PassMode.None ? (
+          {props.game.passMode === None ? (
             <span> (No passing.) </span>
           ) : null}
           <span>It’s </span><PlayerName seat={currentPlayer} /><span>’s turn.</span>
@@ -42,13 +43,13 @@ export function GameStatus(props: Props) {
     <div>
       {mainHeading()}
       <h3>
-        <PlayerName seat={Seat.North} /> — {props.status.north}
+        <PlayerName seat={North} /> — {props.status.north}
         <span className="color-faded"> • </span>
-        <PlayerName seat={Seat.East} /> — {props.status.east}
+        <PlayerName seat={East} /> — {props.status.east}
         <span className="color-faded"> • </span>
-        <PlayerName seat={Seat.South} /> — {props.status.south}
+        <PlayerName seat={South} /> — {props.status.south}
         <span className="color-faded"> • </span>
-        <PlayerName seat={Seat.West} /> — {props.status.west}
+        <PlayerName seat={West} /> — {props.status.west}
       </h3>
     </div>
   )

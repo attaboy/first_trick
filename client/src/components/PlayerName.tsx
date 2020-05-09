@@ -1,5 +1,5 @@
 import React from "react";
-import { Seat } from "../lib/seat";
+import { Seat, North, East, West, South } from "../lib/seat";
 
 interface Props {
   seat: Seat;
@@ -8,13 +8,13 @@ interface Props {
 export function PlayerName(props: Props) {
   function nameForSeat() {
     switch(props.seat) {
-      case Seat.North:
+      case North:
         return "North";
-      case Seat.East:
+      case East:
         return "East";
-      case Seat.West:
+      case West:
         return "West";
-      case Seat.South:
+      case South:
         return "South";
     }
   }

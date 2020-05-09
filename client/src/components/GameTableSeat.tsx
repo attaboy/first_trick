@@ -59,7 +59,7 @@ export function GameTableSeat(props: Props) {
             selected={props.selectedCards.includes(card)}
             invalidCard={invalidCard(card)}
             onClick={onClick}
-            key={card.id}
+            key={`${card.rank}-${card.suit}`}
             card={card}
           />
         ))}
