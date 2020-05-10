@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { GameOfHearts } from "./lib/games/hearts";
+import { GameOfHearts, GameOfHeartsUpdate } from "./lib/games/hearts";
 import App from "./App";
 
 export function Loader() {
@@ -15,9 +15,13 @@ export function Loader() {
     }
   };
 
+  function sendUpdate(update: GameOfHeartsUpdate): void {
+    ws.send(JSON.stringify(update));
+  }
+
   if (game) {
     return (
-      <App game={game} setGame={(game) => setGame(game)} />
+      <App game={game} onUpdate={sendUpdate} />
     );
   } else {
     return (

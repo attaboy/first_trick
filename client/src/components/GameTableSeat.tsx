@@ -2,7 +2,7 @@ import React from "react"
 import { sortHand } from "../lib/games/hearts";
 import { PlayingCard } from "./PlayingCard";
 import { Seat } from "../lib/seat";
-import { Card } from "../lib/card";
+import { Card, CardsContain } from "../lib/card";
 import "./GameTableSeat.scss";
 import { PlayerName } from "./PlayerName";
 import { Trick } from "../lib/trick";
@@ -13,7 +13,6 @@ interface Props {
   selectedCards: Card[]
   currentTrick: Trick | null
   turnActive: boolean
-  isDealer: boolean
   trickWinner?: boolean
   numTricksTaken: number
   onCardClick: (seat: Seat, card: Card, trick: Trick | null) => void
@@ -47,16 +46,13 @@ export function GameTableSeat(props: Props) {
       <div className="SeatLabelContainer">
         <h4 className="SeatLabel">
           <PlayerName seat={props.seat} />
-          {props.isDealer ? (
-            <span> (Dealer)</span>
-          ) : null}
           <span className="SeatLabelTrickCounter"> {tricksTakenLabel()}</span>
         </h4>
       </div>
       <div>
         {sortHand(props.hand).map((card) => (
           <PlayingCard
-            selected={props.selectedCards.includes(card)}
+            selected={CardsContain(props.selectedCards, card)}
             invalidCard={invalidCard(card)}
             onClick={onClick}
             key={`${card.rank}-${card.suit}`}

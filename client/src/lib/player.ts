@@ -1,4 +1,4 @@
-import { Card } from "./card";
+import { Card, CardsContain, RemoveCard, AddCard, RemoveCards, AddCards } from "./card";
 import { Seat } from "./seat";
 import { CompletedTrick } from "./trick";
 
@@ -14,21 +14,21 @@ export interface Player extends Readonly<PlayerJson> {}
 
 export function dealCardFor(player: Player, card: Card): Player {
   return Object.assign({}, player, {
-    hand: player.hand.concat([card])
+    hand: AddCard(player.hand, card)
   });
 }
 
 export function playCardFor(player: Player, card: Card): Player {
   return Object.assign({}, player, {
-    hand: player.hand.filter((ea) => ea !== card)
+    hand: RemoveCard(player.hand, card)
   });
 }
 
 export function selectCardToPassFor(player: Player, card: Card): Player {
   const currentCards = player.cardsToPass;
-  const newCards = currentCards.includes(card) ?
-    currentCards.filter((ea) => ea !== card) :
-    currentCards.concat([card]).slice(-3);
+  const newCards = CardsContain(currentCards, card) ?
+    RemoveCard(currentCards, card) :
+    AddCard(currentCards, card).slice(-3);
   return Object.assign({}, player, {
     cardsToPass: newCards
   });
@@ -42,7 +42,7 @@ export function takeTrickFor(player: Player, trick: CompletedTrick): Player {
 
 export function passAndReceiveCardsFor(player: Player, toReceive: Card[]): Player {
   return Object.assign({}, player, {
-    hand: player.hand.filter((ea) => !player.cardsToPass.includes(ea)).concat(toReceive),
+    hand: AddCards(RemoveCards(player.hand, player.cardsToPass), toReceive),
     cardsToPass: []
   });
 }
