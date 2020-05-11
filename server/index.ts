@@ -1,8 +1,9 @@
 import express from 'express';
 import http from 'http';
 import * as WebSocket from 'ws';
-import {GameOfHearts, GameOfHeartsUpdate} from '../client/src/lib/games/hearts';
+import { GameOfHearts, GameOfHeartsUpdate } from '../client/src/lib/games/hearts';
 import { North } from '../client/src/lib/seat';
+import { GameClientEvent } from '../client/src/lib/game_client_event';
 
 const app = express();
 const server = http.createServer(app);
@@ -13,6 +14,10 @@ const sockets: WebSocket[] = [];
 
 function sendGame(): void {
   sockets.forEach((ws) => ws.send(JSON.stringify(theGame)));
+}
+
+function parseMessage(message: string): GameClientEvent | null {
+
 }
 
 wss.on('connection', (ws: WebSocket) => {
