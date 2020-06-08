@@ -13,7 +13,8 @@ import { GamePassConfirmation } from './components/GamePassConfirmation';
 
 interface Props {
   game: GameOfHearts
-  onUpdate: (update: GameOfHeartsUpdate) => void
+  selfSeat: Seat
+  onUpdate: (update: GameOfHeartsUpdate, seat: Seat) => void
 }
 
 interface State {
@@ -32,9 +33,11 @@ const newStatus: GameOfHeartsStatus = {
 
 function App(props: Props) {
   const game = props.game;
-  const update = props.onUpdate;
-
   const [previousStatus, setPreviousStatus] = useState(newStatus);
+
+  function update(updateData: GameOfHeartsUpdate) {
+    props.onUpdate(updateData, props.selfSeat);
+  }
 
   function restart() {
     update(GameOfHearts.create(North));

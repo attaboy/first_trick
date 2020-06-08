@@ -11,3 +11,16 @@ export const West: West = "west"
 export type Seat = North | East | South | West
 
 export const AllSeats: ReadonlyArray<Seat> = [North, East, South, West];
+
+export function nameForSeat(seat: Seat) {
+  switch (seat) {
+    case North:
+      return "North";
+    case East:
+      return "East";
+    case West:
+      return "West";
+    case South:
+      return "South";
+  }
+}

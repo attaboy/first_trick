@@ -2,7 +2,13 @@ import { Card, CardsContain, RemoveCard, AddCard, RemoveCards, AddCards } from "
 import { Seat } from "./seat";
 import { CompletedTrick } from "./trick";
 
-export interface PlayerJson {
+export interface PlayerIdentity {
+  position: Seat
+  id: string
+  name?: string
+}
+
+interface PlayerJson {
   position: Seat
   hand: Card[]
   cardsToPass: Card[]

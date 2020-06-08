@@ -1,8 +1,18 @@
 import { Seat, North, East, South, West } from "../seat";
-import { Card } from "../card";
+import { Player, PlayerIdentity } from "../player";
 
-export interface Game {
-  deck: Card[];
+export interface NeedsFourPlayers {
+  north: PlayerIdentity | null
+  east: PlayerIdentity | null
+  south: PlayerIdentity | null
+  west: PlayerIdentity | null
+}
+
+export interface FourPlayers {
+  north: Player
+  east: Player
+  south: Player
+  west: Player
 }
 
 export function nextPlayerAfter(seat: Seat): Seat {

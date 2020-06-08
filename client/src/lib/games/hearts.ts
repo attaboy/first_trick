@@ -1,6 +1,6 @@
 import { StandardDeck } from "../deck";
-import { nextPlayerAfter } from "./game";
-import { Player, dealCardFor, playCardFor, selectCardToPassFor, takeTrickFor, passAndReceiveCardsFor, addScoreFor, CreatePlayer } from "../player";
+import { nextPlayerAfter, FourPlayers } from "./game";
+import { dealCardFor, playCardFor, selectCardToPassFor, takeTrickFor, passAndReceiveCardsFor, addScoreFor, CreatePlayer } from "../player";
 import { Trick, CompletedTrick, completedTrickContains, countHearts, playCardForTrick, completedTrickFrom, CreateTrick } from "../trick";
 import { Rank, Ranks, Two, Queen, Ace, King, Jack, Ten, Nine, Eight, Seven, Six, Five, Four, Three } from "../rank";
 import { Seat, AllSeats, North, East, South, West } from "../seat";
@@ -27,14 +27,7 @@ export const None: None = "none"
 
 export type PassMode = Left | Right | Across | None
 
-interface Players {
-  north: Player
-  east: Player
-  south: Player
-  west: Player
-}
-
-export interface GameOfHeartsJson extends Players {
+export interface GameOfHeartsJson extends FourPlayers {
   passMode: PassMode
   passingModeActive: boolean
   currentDealer: Seat
@@ -137,7 +130,7 @@ export class GameOfHearts {
     return this.startFirstTrick(update);
   }
 
-  startFirstTrick(playersUpdate: Players): GameOfHeartsUpdate {
+  startFirstTrick(playersUpdate: FourPlayers): GameOfHeartsUpdate {
     const firstPlayer = AllSeats.find((seat) => CardsContain(playersUpdate[seat].hand, { suit: Clubs, rank: Two }));
     if (firstPlayer) {
       return Object.assign({}, playersUpdate, {
