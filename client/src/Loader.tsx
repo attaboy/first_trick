@@ -22,6 +22,8 @@ export function Loader() {
   const [gameData, setGameData] = useState<GameOfHearts | null>(null);
   const [selfSeat, setSelfSeat] = useState<Seat | null>(null);
   const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [createdGame, setCreatedGame] = useState(false);
+  const [joinedGame, setJoinedGame] = useState(false);
 
   useEffect(() => {
     function receiveEvent(event: SE.ServerEvent) {
@@ -33,12 +35,14 @@ export function Loader() {
       } else if (SE.isGameCreatedEvent(event)) {
         setGameInfo(event.eventData);
         setStatus(Status.GameCreated);
+        setCreatedGame(true);
       } else if (SE.isGameAvailableEvent(event)) {
         setGameInfo(event.eventData);
         setStatus(Status.GameAvailable);
       } else if (SE.isGameJoinedEvent(event)) {
         setGameInfo(event.eventData);
         setStatus(Status.GameJoined);
+        setJoinedGame(true);
       } else if (SE.isGameStartedEvent(event)) {
         setGameInfo(event.eventData);
         setGameData(event.eventData.game);
@@ -148,6 +152,15 @@ export function Loader() {
     }
   }
 
+  function onStartGame(startData: CE.StartGameEventData): void {
+    if (socket) {
+      const event: CE.StartGameEvent = {
+        eventType: CE.StartGameEventType,
+        eventData: startData
+      }
+    }
+  }
+
   if (status === Status.Loading) {
     return (
       <div>
@@ -164,7 +177,10 @@ export function Loader() {
         onCreateGame={onCreateGame}
         onQueryGame={onQueryGame}
         onJoinGame={onJoinGame}
+        onStartGame={onStartGame}
         gameInfo={gameInfo}
+        createdGame={createdGame}
+        joinedGame={joinedGame}
       />
     );
   }

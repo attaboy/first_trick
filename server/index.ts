@@ -3,11 +3,11 @@ import http from 'http';
 import * as WebSocket from 'ws';
 import { v4 as uuidv4 } from 'uuid';
 
-import { GameOfHearts, GameOfHeartsUpdate } from '../client/src/lib/games/hearts';
+import { GameOfHearts } from '../client/src/lib/games/hearts';
 import { North, AllSeats } from '../client/src/lib/seat';
-import { GameClientEvent, isPlayGameEvent, isGameClientEvent, isJoinGameEvent, PlayGameEventData, isCreateGameEvent, CreateGameEventType, CreateGameEventData, JoinGameEventData, isQueryGameEvent, QueryGameEventData, ActiveGameEventData, isStartGameEvent, StartGameEventData } from '../client/src/lib/game_client_event';
-import { GameUpdatedEvent, GameUpdatedEventType, GameReady, GameServerEventData, GameCreatedEvent, GameCreatedEventType, GameAwaitingPlayers, GameServerEvent, findEmptySeat, GameJoinedEventType, GameAvailableEvent, GameAvailableEventType, isActiveGameData, ServerEvent, ReadyEventType, ServerReadyEvent, isGameEventData } from '../client/src/lib/game_server_event';
-import { Player, PlayerIdentity } from '../client/src/lib/player';
+import { GameClientEvent, isPlayGameEvent, isGameClientEvent, isJoinGameEvent, PlayGameEventData, isCreateGameEvent, CreateGameEventData, JoinGameEventData, isQueryGameEvent, QueryGameEventData, isStartGameEvent, StartGameEventData } from '../client/src/lib/game_client_event';
+import { GameUpdatedEvent, GameUpdatedEventType, GameServerEventData, GameCreatedEvent, GameCreatedEventType, GameAwaitingPlayers, GameServerEvent, GameJoinedEventType, GameAvailableEvent, GameAvailableEventType, isActiveGameData, ServerEvent, ReadyEventType, ServerReadyEvent, isGameEventData } from '../client/src/lib/game_server_event';
+import { PlayerIdentity } from '../client/src/lib/player';
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
 const app = express();

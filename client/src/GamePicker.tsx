@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
-import { JoinGameEventData } from './lib/game_client_event';
+import './GamePicker.scss';
+import { JoinGameEventData, StartGameEventData } from './lib/game_client_event';
 import { GameServerEventData } from './lib/game_server_event';
 import { NeedsFourPlayers } from './lib/games/game';
 import { AllSeats, nameForSeat, Seat } from './lib/seat';
+import { GamePickerTableNames } from './components/GamePickerTableNames';
 
 interface Props {
   onCreateGame: (playerName: string) => void
   onQueryGame: (joinCode: string) => void
   onJoinGame: (joinData: JoinGameEventData) => void
+  onStartGame: (startData: StartGameEventData) => void
   gameInfo: GameServerEventData | null
+  createdGame: boolean
+  joinedGame: boolean
 }
 
 function useTextInputHandler<T extends HTMLInputElement>(defaultValue: string): [string, (event: React.ChangeEvent<T>) => void] {
@@ -71,64 +76,87 @@ export function GamePicker(props: Props) {
     setSeatToPick((event.currentTarget.value as Seat) || null);
   }
 
-  return (
-    <div className="GamePicker">
-      <div className="GamePickerNamer">
-        <label htmlFor="PlayerNameText">
-          <span>Enter your first name:</span>
-          <input id="PlayerNameText" type="text" size={20} placeholder="First name" value={playerName} onChange={setPlayerName} />
-        </label>
+  function shouldDisableStart(gameInfo: GameServerEventData): boolean {
+    return AllSeats.some((seat) => !gameInfo.players[seat]);
+  }
+
+  function startGame(gameId: string) {
+    props.onStartGame({
+      gameId: gameId
+    });
+  }
+
+  if ((props.createdGame || props.joinedGame) && props.gameInfo) {
+    const gameInfo = props.gameInfo;
+    return (
+      <div className="GamePicker">
+        <p>Awaiting players.</p>
+
+        <p>Game join code: <code><strong>{gameInfo.joinCode}</strong></code></p>
+
+        <GamePickerTableNames gameInfo={gameInfo} />
+
+        <button type="button"
+          onClick={() => startGame(gameInfo.gameId)}
+          disabled={shouldDisableStart(props.gameInfo)}
+        >Start game</button>
       </div>
-      <div className="GamePickerCreate">
-        <p>Start a new game and invite your friends.</p>
-
-        <button
-          type="button"
-          className="button"
-          onClick={createGame}
-          disabled={shouldDisableCreate()}
-        >Create a new game</button>
-      </div>
-      {props.gameInfo ? (
-        <div className="GamePickerJoin">
-          <p>Join game {props.gameInfo.joinCode}:</p>
-
-          <p>
-            <span>North: {props.gameInfo.players.north?.name || "(open)"}</span>
-            <span>East: {props.gameInfo.players.east?.name || "(open)"}</span>
-            <span>South: {props.gameInfo.players.south?.name || "(open)"}</span>
-            <span>West: {props.gameInfo.players.west?.name || "(open)"}</span>
-          </p>
-
-          <select value={seatToPick || ""} onChange={updateSeatToPick}>
-            <option value="">Select an available seat…</option>
-            {optionsForSeatSelection(props.gameInfo.players)}
-          </select>
-
-          <button
-            type="button"
-            className="button"
-            onClick={joinGame}
-            disabled={shouldDisableJoin()}
-          ></button>
-        </div>
-      ) : (
-        <div className="GamePickerQuery">
-          <p>Join an existing game with a code from a friend.</p>
-
-          <label htmlFor="GameCodeText">
-            <span>Join code:</span>
-            <input id="GameCodeText" type="text" size={4} placeholder="Game code" value={joinCode} onChange={setJoinCode} />
+    );
+  } else {
+    return (
+      <div className="GamePicker">
+        <div className="GamePickerNamer">
+          <label htmlFor="PlayerNameText">
+            <span>Enter your first name:</span>
+            <input id="PlayerNameText" type="text" size={20} placeholder="First name" value={playerName} onChange={setPlayerName} />
           </label>
+        </div>
+        <div className="GamePickerCreate">
+          <p>Start a new game and invite your friends.</p>
 
           <button
             type="button"
             className="button"
-            onClick={queryGame}
-            disabled={shouldDisableQuery()}
-          >Join game</button>
+            onClick={createGame}
+            disabled={shouldDisableCreate()}
+          >Create a new game</button>
         </div>
-      )}
-    </div>
-  );
+        {props.gameInfo ? (
+          <div className="GamePickerJoin">
+            <p>Join game {props.gameInfo.joinCode}:</p>
+
+            <GamePickerTableNames gameInfo={props.gameInfo} />
+
+            <select value={seatToPick || ""} onChange={updateSeatToPick}>
+              <option value="">Select an available seat…</option>
+              {optionsForSeatSelection(props.gameInfo.players)}
+            </select>
+
+            <button
+              type="button"
+              className="button"
+              onClick={joinGame}
+              disabled={shouldDisableJoin()}
+            >Join game</button>
+          </div>
+        ) : (
+          <div className="GamePickerQuery">
+            <p>Join an existing game with a code from a friend.</p>
+
+            <label htmlFor="GameCodeText">
+              <span>Join code:</span>
+              <input id="GameCodeText" type="text" size={4} placeholder="Game code" value={joinCode} onChange={setJoinCode} />
+            </label>
+
+            <button
+              type="button"
+              className="button"
+              onClick={queryGame}
+              disabled={shouldDisableQuery()}
+            >Join game</button>
+          </div>
+        )}
+      </div>
+    );
+  }
 }
