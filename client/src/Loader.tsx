@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { GameOfHearts, GameOfHeartsUpdate } from "./lib/games/hearts";
 import App from "./App";
-import * as SE from "./lib/game_server_event";
 import { GamePicker } from "./GamePicker";
+import { GameOfHearts, GameOfHeartsUpdate } from "./lib/games/hearts";
 import * as CE from "./lib/game_client_event";
+import * as SE from "./lib/game_server_event";
 import { Seat } from "./lib/seat";
 
 enum Status {
@@ -77,12 +77,12 @@ export function Loader() {
 
     return () => {
       if (socket) {
+        console.log("Closing socket");
         socket.close();
         setSocket(null);
       }
     }
-  }, [socket, selfSeat]);
-
+  }, [socket]);
 
   function parseMessage(message: string): SE.ServerEvent | null {
     try {
@@ -158,6 +158,7 @@ export function Loader() {
         eventType: CE.StartGameEventType,
         eventData: startData
       }
+      send(event);
     }
   }
 
@@ -167,9 +168,9 @@ export function Loader() {
         Loading…
       </div>
     );
-  } else if (gameData && selfSeat) {
+  } else if (gameData && selfSeat && gameInfo) {
     return (
-      <App game={gameData} selfSeat={selfSeat} onUpdate={sendUpdate} />
+      <App game={gameData} players={gameInfo.players} selfSeat={selfSeat} onUpdate={sendUpdate} />
     );
   } else {
     return (

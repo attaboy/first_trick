@@ -1,0 +1,15 @@
+.GamePickerJoinPlayer {
+  display: grid;
+  grid-template-columns: 5em 1fr;
+}
+
+.GamePickerJoinPlayerSeat {
+  text-align: right;
+  padding-right: 0.5em;
+}
+
+.GamePickerJoinPlayerName {
+  font-weight: bold;
+}
+
+

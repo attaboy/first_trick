@@ -28,7 +28,7 @@ footer {
   height: 70vh;
   max-height: ($CardHeight + $CardMargin) * 9 + $CardMargin;
   border: 1px solid #808080;
-  background-color: #F0F0F0;
+  background-color: $surfaceBackground;
   border-radius: $CardMargin;
 }
 

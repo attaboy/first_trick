@@ -1,11 +1,13 @@
 import React from "react";
-import { GameOfHearts, GameOfHeartsStatus, None } from "../lib/games/hearts";
+import { GameOfHearts, GameOfHeartsStatus, None, justStarted } from "../lib/games/hearts";
 import { PlayerName } from "./PlayerName";
 import { North, East, South, West } from "../lib/seat";
 import { completedTrickFrom } from "../lib/trick";
+import { NeedsFourPlayers } from "../lib/games/game";
 
 interface Props {
   game: GameOfHearts
+  players: NeedsFourPlayers
   status: GameOfHeartsStatus
 }
 
@@ -20,7 +22,7 @@ export function GameStatus(props: Props) {
       );
     } else if (completedTrick) {
       return (
-        <h2><PlayerName seat={currentPlayer} /><span> takes the trick!</span></h2>
+        <h2><PlayerName name={props.players[currentPlayer]?.name} seat={currentPlayer} /><span> takes the trick!</span></h2>
       );
     } else if (props.game.passingModeActive) {
       return (
@@ -29,11 +31,11 @@ export function GameStatus(props: Props) {
     } else {
       return (
         <h2>
-          <span>{props.game.justStarted() ? "First trick! " : ""}</span>
+          <span>{justStarted(props.game) ? "First trick! " : ""}</span>
           {props.game.passMode === None ? (
             <span> (No passing.) </span>
           ) : null}
-          <span>It’s </span><PlayerName seat={currentPlayer} /><span>’s turn.</span>
+          <span>It’s </span><PlayerName name={props.players[currentPlayer]?.name} seat={currentPlayer} /><span>’s turn.</span>
         </h2>
       );
     }
@@ -43,13 +45,13 @@ export function GameStatus(props: Props) {
     <div>
       {mainHeading()}
       <h3>
-        <PlayerName seat={North} /> — {props.status.north}
+        <PlayerName name={props.players.north?.name} seat={North} /> — {props.status.north}
         <span className="color-faded"> • </span>
-        <PlayerName seat={East} /> — {props.status.east}
+        <PlayerName name={props.players.east?.name} seat={East} /> — {props.status.east}
         <span className="color-faded"> • </span>
-        <PlayerName seat={South} /> — {props.status.south}
+        <PlayerName name={props.players.south?.name} seat={South} /> — {props.status.south}
         <span className="color-faded"> • </span>
-        <PlayerName seat={West} /> — {props.status.west}
+        <PlayerName name={props.players.west?.name} seat={West} /> — {props.status.west}
       </h3>
     </div>
   )

@@ -6,9 +6,13 @@ import { Card, CardsContain } from "../lib/card";
 import "./GameTableSeat.scss";
 import { PlayerName } from "./PlayerName";
 import { Trick } from "../lib/trick";
+import { FaceDownCard } from "./FaceDownCard";
 
 interface Props {
   seat: Seat
+  name: string | undefined
+  isSelf: boolean
+  canSeeOthers: boolean
   hand: Card[]
   selectedCards: Card[]
   currentTrick: Trick | null
@@ -37,6 +41,8 @@ export function GameTableSeat(props: Props) {
     return !canSelectCard || !props.validCard(card, props.hand, props.currentTrick);
   }
 
+  const canSeeHand = props.isSelf || props.canSeeOthers;
+
   return (
     <div className={`Seat ${
       props.turnActive ? "SeatActive" : ""
@@ -45,20 +51,29 @@ export function GameTableSeat(props: Props) {
     }`} id={`Seat-${props.seat}`}>
       <div className="SeatLabelContainer">
         <h4 className="SeatLabel">
-          <PlayerName seat={props.seat} />
+          <PlayerName name={props.name} seat={props.seat} />
           <span className="SeatLabelTrickCounter"> {tricksTakenLabel()}</span>
         </h4>
       </div>
       <div>
-        {sortHand(props.hand).map((card) => (
-          <PlayingCard
-            selected={CardsContain(props.selectedCards, card)}
-            invalidCard={invalidCard(card)}
-            onClick={onClick}
-            key={`${card.rank}-${card.suit}`}
-            card={card}
-          />
-        ))}
+        {sortHand(props.hand).map((card) => {
+          const selected = CardsContain(props.selectedCards, card);
+          const key = `${card.rank}-${card.suit}`;
+          return canSeeHand ? (
+            <PlayingCard
+              selected={selected}
+              invalidCard={invalidCard(card)}
+              onClick={onClick}
+              key={key}
+              card={card}
+            />
+          ) : (
+            <FaceDownCard
+              selected={selected}
+              key={key}
+            />
+          );
+        })}
       </div>
     </div>
   );

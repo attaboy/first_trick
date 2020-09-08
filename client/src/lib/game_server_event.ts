@@ -19,7 +19,7 @@ export type ServerEventType =
   | typeof GameStartedEventType
   | typeof GameUpdatedEventType
 
-interface ServerEventData {
+export interface ServerEventData {
   playerId: string
   selfSeat?: Seat
 }

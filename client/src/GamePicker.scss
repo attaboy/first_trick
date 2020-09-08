@@ -1,0 +1,44 @@
+@import "components/global";
+
+.GamePicker {
+  margin: 1em auto;
+  width: 35em;
+  padding: 1em;
+  background-color: $surfaceBackground;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.GamePickerNamer {
+  grid-column-start: 1;
+  grid-column-end: 3;
+  border-bottom: 1px solid $borderColor;
+}
+
+.GamePickerJoinConfirm {
+  grid-column-start: 1;
+  grid-column-end: 3;
+}
+
+.GamePickerCreate {
+  padding-right: 1em;
+  border-right: 1px solid $borderColor;
+}
+
+.GamePickerJoin, .GamePickerQuery {
+  margin-left: -1px;
+  border-left: 1px solid $borderColor;
+  padding-left: 1em;
+}
+
+.GameCode {
+  display: block;
+  font-size: 2em;
+  border: 1px dashed black;
+  background-color: white;
+  padding: 0 0.5em;
+}
+
+.GamePickerJoinSelectSeat {
+  max-width: 10em;
+}

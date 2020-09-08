@@ -17,7 +17,7 @@ export type GameClientEventType =
 export interface GameClientEventData {
 }
 
-export interface ActiveGameEventData extends GameClientEventData {
+export interface ActiveGameClientEventData extends GameClientEventData {
   gameId: string
 }
 
@@ -49,7 +49,7 @@ export interface JoinGameEvent extends GameClientEvent {
   eventData: JoinGameEventData
 }
 
-export interface JoinGameEventData extends GameClientEventData, ActiveGameEventData {
+export interface JoinGameEventData extends GameClientEventData, ActiveGameClientEventData {
   name: string
   requestedSeat: Seat
 }
@@ -59,7 +59,7 @@ export interface StartGameEvent extends GameClientEvent {
   eventData: StartGameEventData
 }
 
-export interface StartGameEventData extends GameClientEventData, ActiveGameEventData {
+export interface StartGameEventData extends GameClientEventData, ActiveGameClientEventData {
 }
 
 export interface PlayGameEvent extends GameClientEvent {
@@ -67,7 +67,7 @@ export interface PlayGameEvent extends GameClientEvent {
   eventData: PlayGameEventData
 }
 
-export interface PlayGameEventData extends GameClientEventData, ActiveGameEventData {
+export interface PlayGameEventData extends GameClientEventData, ActiveGameClientEventData {
   update: GameOfHeartsUpdate
 }
 

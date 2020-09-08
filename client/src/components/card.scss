@@ -1,0 +1,23 @@
+%card {
+  position: relative;
+  box-sizing: border-box;
+  position: relative;
+  display: inline-block;
+  background-color: white;
+  border-radius: 5px;
+  border-width: 1px 0 0 1px;
+  border-style: solid;
+  border-color: $shadowColorFade;
+  padding: 0;
+  margin: 0;
+  box-shadow: $boxShadow;
+  font-size: $CardWidth / 2.5;
+  width: $CardWidth;
+  height: $CardHeight;
+  margin-right: $CardMargin;
+  margin-bottom: $CardMargin;
+  transition: transform 0.075s ease-in;
+}
+
+$CardHoverTransform: scale(1.05);
+$CardSelectTransform: rotate(-35deg);

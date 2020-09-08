@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './App.scss';
-import { GameOfHearts, winnerOfTrick, GameOfHeartsStatus, nextPassModeAfter, GameOfHeartsUpdate } from './lib/games/hearts';
+import { GameOfHearts, winnerOfTrick, GameOfHeartsStatus, nextPassModeAfter, GameOfHeartsUpdate, CreateGameOfHearts, passCards, selectCardToPass, playCard, nextTrick, turnActiveFor, validCard } from './lib/games/hearts';
 import { Seat, AllSeats, North } from './lib/seat';
 import { GameTableSeat } from './components/GameTableSeat';
 import { Card } from './lib/card';
@@ -8,11 +8,13 @@ import { CompletedTrick, Trick, completedTrickFrom } from './lib/trick';
 import { GameTrick } from './components/GameTrick';
 import { GameStatus } from './components/GameStatus';
 import { GameOver } from './components/GameOver';
-import { nextPlayerAfter } from './lib/games/game';
+import { nextPlayerAfter, NeedsFourPlayers } from './lib/games/game';
 import { GamePassConfirmation } from './components/GamePassConfirmation';
+import { GameServerEventData } from './lib/game_server_event';
 
 interface Props {
   game: GameOfHearts
+  players: NeedsFourPlayers
   selfSeat: Seat
   onUpdate: (update: GameOfHeartsUpdate, seat: Seat) => void
 }
@@ -40,23 +42,23 @@ function App(props: Props) {
   }
 
   function restart() {
-    update(GameOfHearts.create(North));
+    update(CreateGameOfHearts(North));
   }
 
-  function passCards() {
-    update(game.passCards());
+  function passCardsAndUpdate() {
+    update(passCards(game));
   }
 
   function onCardClick(seat: Seat, card: Card, trick: Trick | null) {
     if (game.passingModeActive) {
-      update(game.selectCardToPass(seat, card));
+      update(selectCardToPass(game, seat, card));
     } else if (trick) {
-      update(game.playCard(seat, card, trick));
+      update(playCard(game, seat, card, trick));
     }
   }
 
-  function nextTrick(completedTrick: CompletedTrick) {
-    update(game.nextTrick(completedTrick))
+  function nextTrickAndUpdate(completedTrick: CompletedTrick) {
+    update(nextTrick(game, completedTrick))
   }
 
   function startNewGame() {
@@ -67,7 +69,7 @@ function App(props: Props) {
       west: previousStatus.west + game.west.score,
       handsPlayed: previousStatus.handsPlayed + 1
     });
-    update(GameOfHearts.create(nextPlayerAfter(game.currentDealer), nextPassModeAfter(game.passMode)));
+    update(CreateGameOfHearts(nextPlayerAfter(game.currentDealer), nextPassModeAfter(game.passMode)));
   }
 
   function currentStatus(): GameOfHeartsStatus {
@@ -86,7 +88,7 @@ function App(props: Props) {
   return (
     <div className="App">
       <header className="App-header">
-        <GameStatus game={game} status={currentStatus()} />
+        <GameStatus game={game} players={props.players} status={currentStatus()} />
       </header>
       <section className="GameTable">
         <div>
@@ -94,26 +96,30 @@ function App(props: Props) {
             <GameTableSeat
               key={`Seat-${seat}`}
               seat={seat}
+              name={props.players[seat]?.name}
+              isSelf={props.selfSeat === seat}
+              canSeeOthers={false}
               hand={game[seat].hand}
               selectedCards={game[seat].cardsToPass}
               currentTrick={game.currentTrick}
-              turnActive={game.turnActiveFor(seat)}
+              turnActive={turnActiveFor(game, seat)}
               trickWinner={seat === maybeTrickWinner}
               numTricksTaken={game[seat].tricksTaken.length}
               onCardClick={onCardClick}
-              validCard={(card, hand, trick) => game.validCard(card, hand, trick)}
+              validCard={(card, hand, trick) => validCard(game, card, hand, trick)}
             />
           ))}
         </div>
         {game.passingModeActive ? (
           <GamePassConfirmation
             game={game}
-            onClick={passCards}
+            onClick={passCardsAndUpdate}
           />
         ) : null}
         {game.gameOver ? (
           <GameOver
             game={game}
+            players={props.players}
             status={previousStatus}
             onNewGame={startNewGame}
           />
@@ -123,7 +129,7 @@ function App(props: Props) {
             trick={game.currentTrick}
             completedTrick={maybeCompletedTrick}
             trickWinner={maybeTrickWinner}
-            onNextTrick={nextTrick}
+            onNextTrick={nextTrickAndUpdate}
           />
         ) : null}
       </section>

@@ -6,7 +6,7 @@
     "start": "concurrently \"yarn server\" \"yarn client\"",
     "dev": "concurrently \"yarn devserver\" \"yarn client\"",
     "server": "node .",
-    "devserver": "nodemon .",
+    "devserver": "nodemon --inspect server/index.ts",
     "client": "cd client && yarn start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -18,6 +18,7 @@
     "@types/ws": "^7.2.4",
     "concurrently": "^5.2.0",
     "express": "^4.17.1",
+    "ts-node": "^9.0.0",
     "typescript": "^3.8.3",
     "uuid": "^8.0.0",
     "ws": "^7.2.5"

@@ -10,6 +10,10 @@ $boxShadow: 2px 2px 0 $shadowColor;
 $boxShadowHover: 8px 8px 0 $shadowColorFade;
 $boxShadowDisabled: 1px 1px 0 $shadowColorDark;
 
+$borderColor: rgba(0, 0, 0, 0.5);
+
+$surfaceBackground: #F0F0F0;
+
 @mixin verticallyCenter {
   display: flex;
   flex-direction: column;
@@ -19,6 +23,10 @@ $boxShadowDisabled: 1px 1px 0 $shadowColorDark;
 
 body {
   color: hsl(315, 6%, 13%);
+}
+
+p {
+  line-height: 1.5;
 }
 
 .color-faded {
@@ -44,9 +52,10 @@ body {
   box-shadow: $boxShadowHover;
 }
 
-.button[disabled] {
+.button[disabled], .button[disabled]:hover {
   cursor: default;
   opacity: 0.5;
+  transform: none;
   box-shadow: $boxShadowDisabled;
 }
 
@@ -59,3 +68,24 @@ body {
   transform: none;
   box-shadow: $boxShadow;
 }
+
+.inputFlex {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 1em;
+
+  > span {
+    flex: initial;
+    padding-top: 0.1em;
+    padding-right: 0.5em;
+  }
+
+  > .input {
+    flex: auto;
+  }
+}
+
+.input {
+  font-size: inherit;
+}
+

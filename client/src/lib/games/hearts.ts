@@ -43,211 +43,189 @@ interface GameOfHeartsInterface extends GameOfHeartsJson {}
 
 export interface GameOfHearts extends Readonly<GameOfHeartsInterface> {}
 
-export class GameOfHearts {
-  constructor(props: GameOfHeartsInterface) {
-    Object.assign(this, props);
+export function deal(game: GameOfHearts, deck: Card[]): GameOfHearts {
+  let recipient = nextPlayerAfter(game.currentDealer);
+  let nextCard = deck.pop();
+  const newGame = Object.assign({}, game);
+  while (nextCard) {
+    let newGameUpdate: Partial<GameOfHeartsInterface> = {};
+    newGameUpdate[recipient] = dealCardFor(newGame[recipient], nextCard);
+    Object.assign(newGame, newGameUpdate);
+    recipient = nextPlayerAfter(recipient);
+    nextCard = deck.pop();
   }
+  return newGame;
+}
 
-  private deal(deck: Card[]): GameOfHearts {
-    let recipient = nextPlayerAfter(this.currentDealer);
-    let nextCard = deck.pop();
-    let game = this.clone({});
-    while (nextCard) {
-      const update: Partial<GameOfHeartsInterface> = {};
-      update[recipient] = dealCardFor(game[recipient], nextCard);
-      game = game.clone(update)
-      recipient = nextPlayerAfter(recipient);
-      nextCard = deck.pop();
-    }
-    return game;
+export function turnActiveFor(game: GameOfHearts, seat: Seat): boolean {
+  return Boolean(game.passingModeActive ||
+    (seat === game.currentPlayer && game.currentTrick && !completedTrickFrom(game.currentTrick)));
+}
+
+export function playCard(game: GameOfHearts, playingSeat: Seat, card: Card, trick: Trick): GameOfHeartsUpdate {
+  const player = game[playingSeat];
+  const currentTrick = playCardForTrick(trick, playingSeat, card);
+  const completedTrick = completedTrickFrom(currentTrick);
+  const nextPlayer = completedTrick ? winnerOfTrick(completedTrick) : nextPlayerAfter(game.currentPlayer);
+  const update: GameOfHeartsUpdate = {
+    currentTrick: currentTrick,
+    currentPlayer: nextPlayer
+  };
+  update[playingSeat] = playCardFor(player, card);
+  if (!game.heartsBroken && CardIs(card, Hearts)) {
+    update.heartsBroken = true;
   }
+  return update;
+}
 
-  turnActiveFor(seat: Seat): boolean {
-    return Boolean(this.passingModeActive ||
-      (seat === this.currentPlayer && this.currentTrick && !completedTrickFrom(this.currentTrick)));
+export function selectCardToPass(game: GameOfHearts, playingSeat: Seat, card: Card): GameOfHeartsUpdate {
+  const player = game[playingSeat];
+  const update: GameOfHeartsUpdate = {};
+  update[playingSeat] = selectCardToPassFor(player, card);
+  return update;
+}
+
+export function readyToPass(game: GameOfHearts): boolean {
+  return game.passingModeActive && AllSeats.every((seat) => game[seat].cardsToPass.length === 3);
+}
+
+export function passCards(game: GameOfHearts): GameOfHeartsUpdate {
+  const northSends = game.north.cardsToPass;
+  const eastSends = game.east.cardsToPass;
+  const westSends = game.west.cardsToPass;
+  const southSends = game.south.cardsToPass;
+
+  let northReceives: Card[] = [];
+  let eastReceives: Card[] = [];
+  let southReceives: Card[] = [];
+  let westReceives: Card[] = [];
+
+  if (game.passMode === Left) {
+    northReceives = westSends;
+    eastReceives = northSends;
+    southReceives = eastSends;
+    westReceives = southSends;
+  } else if (game.passMode === Right) {
+    northReceives = eastSends;
+    eastReceives = southSends;
+    southReceives = westSends;
+    westReceives = northSends;
+  } else if (game.passMode === Across) {
+    northReceives = southSends;
+    eastReceives = westSends;
+    southReceives = northSends;
+    westReceives = eastSends;
   }
+  const update = {
+    north: passAndReceiveCardsFor(game.north, northReceives),
+    east: passAndReceiveCardsFor(game.east, eastReceives),
+    south: passAndReceiveCardsFor(game.south, southReceives),
+    west: passAndReceiveCardsFor(game.west, westReceives),
+  };
+  return startFirstTrick(game, update);
+}
 
-  playCard(playingSeat: Seat, card: Card, trick: Trick): GameOfHeartsUpdate {
-    const player = this[playingSeat];
-    const currentTrick = playCardForTrick(trick, playingSeat, card);
-    const completedTrick = completedTrickFrom(currentTrick);
-    const nextPlayer = completedTrick ? winnerOfTrick(completedTrick) : nextPlayerAfter(this.currentPlayer);
-    const update: GameOfHeartsUpdate = {
-      currentTrick: currentTrick,
-      currentPlayer: nextPlayer
-    };
-    update[playingSeat] = playCardFor(player, card);
-    if (!this.heartsBroken && CardIs(card, Hearts)) {
-      update.heartsBroken = true;
-    }
+export function startFirstTrick(game: GameOfHearts, playersUpdate: FourPlayers): GameOfHeartsUpdate {
+  const firstPlayer = AllSeats.find((seat) => CardsContain(playersUpdate[seat].hand, { suit: Clubs, rank: Two }));
+  if (firstPlayer) {
+    return Object.assign({}, game, playersUpdate, {
+      passingModeActive: false,
+      currentPlayer: firstPlayer,
+      currentTrick: CreateTrick(firstPlayer)
+    });
+  } else {
+    throw new Error("What did you do with the two of clubs?");
+  }
+}
+
+export function hasTricksLeft(game: GameOfHearts): boolean {
+  return game[game.currentPlayer].hand.length > 0;
+}
+
+export function justStarted(game: GameOfHearts): boolean {
+  return AllSeats.every((seat) => game[seat].tricksTaken.length === 0);
+}
+
+export function nextTrick(game: GameOfHearts, completedTrick: CompletedTrick): GameOfHeartsUpdate {
+  const trickWinner = game[game.currentPlayer];
+  const updatedPlayer = takeTrickFor(trickWinner, completedTrick);
+  const update: Partial<GameOfHeartsInterface> = {};
+  update[game.currentPlayer] = updatedPlayer;
+  if (hasTricksLeft(game)) {
+    update.currentTrick = CreateTrick(game.currentPlayer);
     return update;
+  } else {
+    return endGame(Object.assign({}, game, update));
   }
+}
 
-  selectCardToPass(playingSeat: Seat, card: Card): GameOfHeartsUpdate {
-    const player = this[playingSeat];
-    const update: GameOfHeartsUpdate = {};
-    update[playingSeat] = selectCardToPassFor(player, card);
-    return update;
-  }
-
-  readyToPass(): boolean {
-    return this.passingModeActive && AllSeats.every((seat) => this[seat].cardsToPass.length === 3);
-  }
-
-  passCards(): GameOfHeartsUpdate {
-    const northSends = this.north.cardsToPass;
-    const eastSends = this.east.cardsToPass;
-    const westSends = this.west.cardsToPass;
-    const southSends = this.south.cardsToPass;
-
-    let northReceives: Card[] = [];
-    let eastReceives: Card[] = [];
-    let southReceives: Card[] = [];
-    let westReceives: Card[] = [];
-
-    if (this.passMode === Left) {
-      northReceives = westSends;
-      eastReceives = northSends;
-      southReceives = eastSends;
-      westReceives = southSends;
-    } else if (this.passMode === Right) {
-      northReceives = eastSends;
-      eastReceives = southSends;
-      southReceives = westSends;
-      westReceives = northSends;
-    } else if (this.passMode === Across) {
-      northReceives = southSends;
-      eastReceives = westSends;
-      southReceives = northSends;
-      westReceives = eastSends;
-    }
-    const update = {
-      north: passAndReceiveCardsFor(this.north, northReceives),
-      east: passAndReceiveCardsFor(this.east, eastReceives),
-      south: passAndReceiveCardsFor(this.south, southReceives),
-      west: passAndReceiveCardsFor(this.west, westReceives),
-    };
-    return this.startFirstTrick(update);
-  }
-
-  startFirstTrick(playersUpdate: FourPlayers): GameOfHeartsUpdate {
-    const firstPlayer = AllSeats.find((seat) => CardsContain(playersUpdate[seat].hand, { suit: Clubs, rank: Two }));
-    if (firstPlayer) {
-      return Object.assign({}, playersUpdate, {
-        passingModeActive: false,
-        currentPlayer: firstPlayer,
-        currentTrick: CreateTrick(firstPlayer)
-      });
-    } else {
-      throw new Error("What did you do with the two of clubs?");
-    }
-  }
-
-  hasTricksLeft(): boolean {
-    return this[this.currentPlayer].hand.length > 0;
-  }
-
-  justStarted(): boolean {
-    return AllSeats.every((seat) => this[seat].tricksTaken.length === 0);
-  }
-
-  nextTrick(completedTrick: CompletedTrick): GameOfHeartsUpdate {
-    const trickWinner = this[this.currentPlayer];
-    const updatedPlayer = takeTrickFor(trickWinner, completedTrick);
-    const update: Partial<GameOfHeartsInterface> = {};
-    update[this.currentPlayer] = updatedPlayer;
-    if (this.hasTricksLeft()) {
-      update.currentTrick = CreateTrick(this.currentPlayer);
-      return update;
-    } else {
-      return this.clone(update).endGame();
-    }
-  }
-
-  endGame(): GameOfHeartsUpdate {
-    const moonShooter = this.findMoonShooter();
-    const update: Partial<GameOfHeartsInterface> = {
-      gameOver: true
-    };
-    if (moonShooter) {
-      AllSeats.filter((ea) => ea !== moonShooter).forEach((seat) => {
-        const player = this[seat];
-        update[seat] = addScoreFor(player, 26);
-      });
-    } else {
-      AllSeats.forEach((seat) => {
-        const player = this[seat];
-        const numHearts = player.tricksTaken.reduce((sum, trick) => sum + countHearts(trick), 0);
-        const hasQueenOfSpades = player.tricksTaken.some((trick) => completedTrickContains(trick, { suit: Spades, rank: Queen }));
-        update[seat] = addScoreFor(player, numHearts + (hasQueenOfSpades ? 13 : 0));
-      });
-    }
-    return update;
-  }
-
-  findMoonShooter(): Seat | undefined {
-    return AllSeats.find((seat) => {
-      return shotTheMoon(this[seat].tricksTaken);
+export function endGame(game: GameOfHearts): GameOfHeartsUpdate {
+  const moonShooter = findMoonShooter(game);
+  const update: Partial<GameOfHeartsInterface> = {
+    gameOver: true
+  };
+  if (moonShooter) {
+    AllSeats.filter((ea) => ea !== moonShooter).forEach((seat) => {
+      const player = game[seat];
+      update[seat] = addScoreFor(player, 26);
+    });
+  } else {
+    AllSeats.forEach((seat) => {
+      const player = game[seat];
+      const numHearts = player.tricksTaken.reduce((sum, trick) => sum + countHearts(trick), 0);
+      const hasQueenOfSpades = player.tricksTaken.some((trick) => completedTrickContains(trick, { suit: Spades, rank: Queen }));
+      update[seat] = addScoreFor(player, numHearts + (hasQueenOfSpades ? 13 : 0));
     });
   }
+  return update;
+}
 
-  validCard(card: Card, hand: Card[], trick: Trick | null): boolean {
-    return !trick || this.validCardForTrick(card, hand, trick);
+export function findMoonShooter(game: GameOfHearts): Seat | undefined {
+  return AllSeats.find((seat) => {
+    return shotTheMoon(game[seat].tricksTaken);
+  });
+}
+
+export function validCard(game: GameOfHearts, card: Card, hand: Card[], trick: Trick | null): boolean {
+    return !trick || validCardForTrick(game, card, hand, trick);
   }
 
-  validCardForTrick(card: Card, hand: Card[], trick: Trick): boolean {
-    const leadCard = trick[trick.lead];
-    if (!leadCard && this.justStarted()) {
-      return CardIs(card, Clubs, Two);
-    } else if (!leadCard) {
-      return this.heartsBroken ||
-        !CardIs(card, Hearts) ||
-        hand.every((ea) => CardIs(ea, Hearts));
-    } else if (hand.some((ea) => CardIs(ea, leadCard.suit))) {
-      return CardIs(card, leadCard.suit);
-    } else if (this.justStarted()) {
-      return !CardIs(card, Hearts) && !CardIs(card, Spades, Queen);
-    } else {
-      return true;
-    }
+export function validCardForTrick(game: GameOfHearts, card: Card, hand: Card[], trick: Trick): boolean {
+  const leadCard = trick[trick.lead];
+  if (!leadCard && justStarted(game)) {
+    return CardIs(card, Clubs, Two);
+  } else if (!leadCard) {
+    return game.heartsBroken ||
+      !CardIs(card, Hearts) ||
+      hand.every((ea) => CardIs(ea, Hearts));
+  } else if (hand.some((ea) => CardIs(ea, leadCard.suit))) {
+    return CardIs(card, leadCard.suit);
+  } else if (justStarted(game)) {
+    return !CardIs(card, Hearts) && !CardIs(card, Spades, Queen);
+  } else {
+    return true;
   }
+}
 
-  clone(newProps: Partial<GameOfHeartsInterface>): GameOfHearts {
-    return new GameOfHearts(Object.assign({}, this, newProps));
-  }
+export function EmptyGameOfHearts(newDealer: Seat, newPassMode?: PassMode) {
+  return {
+    north: CreatePlayer(North),
+    east: CreatePlayer(East),
+    south: CreatePlayer(South),
+    west: CreatePlayer(West),
+    currentDealer: newDealer,
+    heartsBroken: false,
+    passMode: newPassMode || Left,
+    passingModeActive: true,
+    currentTrick: null,
+    currentPlayer: newDealer,
+    gameOver: false
+  };
+}
 
-  static create(newDealer: Seat, newPassMode?: PassMode): GameOfHearts {
-    const deck = StandardDeck(true);
-    return new GameOfHearts({
-      north: CreatePlayer(North),
-      east: CreatePlayer(East),
-      south: CreatePlayer(South),
-      west: CreatePlayer(West),
-      currentDealer: newDealer,
-      heartsBroken: false,
-      passMode: newPassMode || Left,
-      passingModeActive: true,
-      currentTrick: null,
-      currentPlayer: newDealer,
-      gameOver: false
-    }).deal(deck);
-  }
-
-  static fromJson(json: GameOfHeartsJson): GameOfHearts {
-    return new GameOfHearts({
-      north: json.north,
-      east: json.east,
-      south: json.south,
-      west: json.west,
-      currentDealer: json.currentDealer,
-      heartsBroken: json.heartsBroken,
-      passMode: json.passMode,
-      passingModeActive: json.passingModeActive,
-      currentTrick: json.currentTrick,
-      currentPlayer: json.currentPlayer,
-      gameOver: json.gameOver
-    });
-  }
+export function CreateGameOfHearts(newDealer: Seat, newPassMode?: PassMode): GameOfHearts {
+  const deck = StandardDeck(true);
+  return deal(EmptyGameOfHearts(newDealer, newPassMode), deck);
 }
 
 export function winnerOfTrick(trick: CompletedTrick): Seat {

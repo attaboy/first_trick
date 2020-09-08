@@ -1,5 +1,5 @@
 import React from "react";
-import { GameOfHearts } from "../lib/games/hearts";
+import { GameOfHearts, readyToPass } from "../lib/games/hearts";
 
 interface Props {
   game: GameOfHearts
@@ -13,7 +13,7 @@ export function GamePassConfirmation(props: Props) {
   }
 
   function notReady() {
-    return !props.game.readyToPass()
+    return !readyToPass(props.game);
   }
 
   return (

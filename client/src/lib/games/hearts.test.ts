@@ -1,9 +1,10 @@
-import { winnerOfTrick } from "./hearts"
+import { winnerOfTrick, CreateGameOfHearts, deal, Left, EmptyGameOfHearts } from "./hearts"
 import { CompletedTrick } from "../trick"
 import { Card } from "../card"
 import { Seat, North, East, South, West } from "../seat"
 import { Suit, Hearts, Spades, Diamonds, Clubs } from "../suit"
 import { Rank, Ace, King, Queen, Jack, Two, Five, Eight, Six } from "../rank"
+import { StandardDeck } from "../deck"
 
 describe("winnerOfTrick", () => {
   it("returns the winner of a completed trick", () => {
@@ -78,5 +79,21 @@ describe("winnerOfTrick", () => {
       west: { suit: Spades, rank: Eight }
     });
     expect(winner8).toBe(North);
+  });
+});
+
+describe("deal", () => {
+  it("distributes a deck of cards to update an existing game", () => {
+    const game = EmptyGameOfHearts(North, Left);
+    expect(game.north.hand).toHaveLength(0);
+    expect(game.east.hand).toHaveLength(0);
+    expect(game.south.hand).toHaveLength(0);
+    expect(game.west.hand).toHaveLength(0);
+    const deck = StandardDeck(true);
+    const newGame = deal(game, deck);
+    expect(newGame.north.hand).toHaveLength(13);
+    expect(newGame.east.hand).toHaveLength(13);
+    expect(newGame.south.hand).toHaveLength(13);
+    expect(newGame.west.hand).toHaveLength(13);
   });
 });

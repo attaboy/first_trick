@@ -1,21 +1,23 @@
 import React from "react";
-import { GameOfHearts, GameOfHeartsStatus } from "../lib/games/hearts";
+import { GameOfHearts, GameOfHeartsStatus, findMoonShooter } from "../lib/games/hearts";
 import { PlayerName } from "./PlayerName";
 import { Seat, AllSeats } from "../lib/seat";
+import { NeedsFourPlayers } from "../lib/games/game";
 
 interface GameOverProps {
   game: GameOfHearts
+  players: NeedsFourPlayers
   status: GameOfHeartsStatus
   onNewGame: () => void
 }
 
 export function GameOver(props: GameOverProps) {
   function summarizeResult() {
-    const moonShooter = props.game.findMoonShooter();
+    const moonShooter = findMoonShooter(props.game);
     if (moonShooter) {
       return (
         <span>
-          <PlayerName seat={moonShooter} />
+          <PlayerName name={props.players[moonShooter]?.name} seat={moonShooter} />
           <span> shot the moon!</span>
         </span>
       );
@@ -31,7 +33,7 @@ export function GameOver(props: GameOverProps) {
       <h2>{summarizeResult()}</h2>
       <div id="GameScores">
         {AllSeats.map((seat) => (
-          <GameOverScore key={`GameOverScore-${seat}`} seat={seat} game={props.game} status={props.status} />
+          <GameOverScore players={props.players} key={`GameOverScore-${seat}`} seat={seat} game={props.game} status={props.status} />
         ))}
       </div>
       <div>
@@ -44,6 +46,7 @@ export function GameOver(props: GameOverProps) {
 interface GameOverScoreProps {
   seat: Seat
   game: GameOfHearts
+  players: NeedsFourPlayers
   status: GameOfHeartsStatus
 }
 
@@ -55,7 +58,7 @@ function GameOverScore(props: GameOverScoreProps) {
   const firstGame = AllSeats.every((seat) => props.status[seat] === 0);
   return (
     <div id={`GameScore-${seat}`}>
-      <PlayerName seat={seat} />
+      <PlayerName name={props.players[seat]?.name} seat={seat} />
       <span>
         <span> — </span>
         {firstGame ? (
