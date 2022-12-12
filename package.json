@@ -17,7 +17,7 @@
     "@types/uuid": "^7.0.3",
     "@types/ws": "^7.2.4",
     "concurrently": "^5.2.0",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "ts-node": "^9.0.0",
     "typescript": "^3.8.3",
     "uuid": "^8.0.0",
